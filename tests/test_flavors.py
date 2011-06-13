@@ -29,9 +29,10 @@ class TestFlavors:
 	Verify the expected details are returned for a flavor
 	"""
 
-	f = self.os.flavors.get(1)
-        assert_isinstance(f, Flavor)
-        assert_equal(f.ram, 512)
-        assert_equal(f.disk, 0)
+	flavor = self.os.flavors.get(1)
+        assert_isinstance(flavor, Flavor)
+        assert_equal(flavor.ram, 512)
+        assert_equal(flavor.disk, 0)
+        assert_equal(200, flavor.status_code)
 
   

@@ -34,7 +34,7 @@ def get_username():
     return "admin"
 
 def get_api_key():
-    return "f9KvLCVt5rkogVbjB0Va"
+    return "uyEVzCbiHjTaSrQ7F5oS"
 
 
 def assert_isinstance(thing, kls):

@@ -33,18 +33,23 @@ class TestImages:
     	self.server.delete()
 
     def test_get_image_details(self):
+        """        
+        Verify the correct details are returned for an image
+        """
+        
         image = self.os.images.get(1)
         assert_isinstance(image, Image)
         assert_equal(image.id, 1)
         assert_equal(image.name, 'ari-tty')
 
     def test_create_delete_image(self):
+        """
+        Verify that a new image can be created and deleted
+        """
+        
         image = self.os.images.create("Just in case",
                                 "http://172.19.0.3:8774/v1.1/servers/%s" % 
                                 str(self.server.id))
         assert_isinstance(image, Image)
         self.os.images.delete(iimage.id)
 
-    def test_find(self):
-        image = self.os.images.find(name="aki-tty")
-        assert_equal(image.id, 2)

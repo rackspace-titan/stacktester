@@ -33,37 +33,64 @@ class TestServers:
 	    self.server.delete()
 
     def test_list_servers(self):
-	    serverList = self.os.servers.list()
-	    found = False
-	    for s in serverList:
-	    	if s.name == 'testserver':
-	    		found = True
-	    assert found
+        """	    
+        Verify that a new server is returned in the list of
+        servers for the user
+        """
+        serverList = self.os.servers.list()
+        found = False
+        for s in serverList:
+            if s.name == 'testserver':
+                found = True
+        assert found
 
     def test_create_delete_server(self):
+        """
+        Verify that a server instance can be created and deleted        
+        """
+        
         newServer = self.os.servers.create(name="testserver2", 
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
+        
+        assert_equal(202, newServer.status_code)        
         newServer.waitForStatus('ACTIVE')
         createdServer = self.os.servers.get(newServer.id)
-        assert_equal('testserver2', createdServer.name)
-        assert_equal('202', createdServer.status_code)        
+        assert_equal('testserver2', createdServer.name)                
         newServer.delete()
     
     def test_update_server_name(self):
+        """         
+        Verify the name of an instance can be changed
+        """
+    
         self.server.update_name(name='modifiedName')
         self.server.waitForStatus('ACTIVE')
 
         updatedServer = self.os.servers.get(self.server.id)
         assert_equal('modifiedName', updatedServer.name)
-        assert_equal('204', updatedServer.status_code)
 
     def test_create_server_invalid_image(self):
-        newServer = self.os.servers.create(name="testserver2", 
+        """
+        Verify that creating a server with an unknown image ref will fail
+        """
+        try:
+            newServer = self.os.servers.create(name="testserver2", 
                     image="http://glance1:9292/v1/images/9999",
                     flavor="http://172.19.0.3:8774/v1.1/flavors/3")
+            fail
+        except:
+            pass
 
     def test_create_server_invalid_flavor(self):
-        newServer = self.os.servers.create(name="testserver2", 
+        """
+        Verify that creating a server with an unknown image ref will fail
+        """
+        
+        try:
+            newServer = self.os.servers.create(name="testserver2", 
                     image="http://glance1:9292/v1/images/1",
                     flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
+            fail
+        except:
+            pass

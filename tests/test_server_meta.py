@@ -33,7 +33,7 @@ class TestSServers:
     def teardown_class(self):
 	    self.server.delete()
 
-    def test_list_servers(self):
+    def test_get_servers_metdata(self):
         """
         Test that we can retrieve metadata for a server.
         """
