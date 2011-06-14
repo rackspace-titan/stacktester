@@ -18,8 +18,8 @@ from domainobjects import servers
 import utils
 
 
-class TestSServers(unittest.TestCase):
-    
+class ServerMetaTest(utils.TestCase):
+
     def setUp(self):
         self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver",
@@ -27,7 +27,7 @@ class TestSServers(unittest.TestCase):
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3",
                                 meta={'testKey': 'testData'})
         self.server.waitForStatus('ACTIVE')
-    
+
     def tearDown(self):
 	    self.server.delete()
 
@@ -40,7 +40,7 @@ class TestSServers(unittest.TestCase):
         s = self.os.servers.get(self.server)
 
         # Verify that it has the value we expect
-        self..assertEqual(s.metadata['testKey'], 'testData')
+        self.assertEqual(s.metadata['testKey'], 'testData')
 
     def test_create_delete_metadata(self):
         pass

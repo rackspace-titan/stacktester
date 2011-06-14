@@ -19,11 +19,11 @@ novaclient module.
 
 __version__ = '2.4'
 
-from domainobjects import client 
+from domainobjects import client
 from domainobjects import flavors
 from domainobjects import images
 from domainobjects import servers
-from domainobjects import utils
+import utils
 
 
 class OpenStack(object):

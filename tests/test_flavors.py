@@ -18,17 +18,17 @@ from domainobjects import flavors
 import utils
 
 
-class TestFlavors(utils.TestCase):
-    
+class FlavorsTest(utils.TestCase):
+
     def setUp(self):
         self.os = openstack.OpenStack()
 
     def test_get_flavor_details(self):
-	"""        
-	Verify the expected details are returned for a flavor
-	"""
+        """
+        Verify the expected details are returned for a flavor
+        """
 
-	flavor = self.os.flavors.get(1)
+        flavor = self.os.flavors.get(1)
         self.assertIsInstance(flavor, flavors.Flavor)
         self.assertEqual(flavor.ram, 512)
         self.assertEqual(flavor.disk, 0)

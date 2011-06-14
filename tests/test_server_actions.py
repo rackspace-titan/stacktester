@@ -21,7 +21,7 @@ from domainobjects import openstack
 import utils
 
 
-class TestServerActions(utils.TestCase):
+class ServerActionsTest(utils.TestCase):
 
     def setUp(self):
         self.os = openstack.OpenStack()
@@ -32,17 +32,17 @@ class TestServerActions(utils.TestCase):
 
     def tearDown(self):
         self.server.delete()
-        
+
     def test_rebuild_server(self):
         """
         Test that a server can be rebuilt with a new image
         """
-                
+
         self.server.rebuild("http://glance1:9292/v1/images/4")
         self.server.waitForStatus('ACTIVE')
         rebuilt_server = self.os.servers.get(self.server)
-	#TODO: let's assert something here
-         
+	    #TODO: let's assert something here
+
 
     def test_resize_server_confirm(self):
         """
@@ -65,7 +65,7 @@ class TestServerActions(utils.TestCase):
         Verify that a re-sized server can be reverted back to its
         original flavor
         """
-        
+
         # Resize the server and wait for it to finish
         new_flavor = self.os.flavors.get(3)
         self.server.resize(3)

@@ -18,23 +18,23 @@ from domainobjects import images
 import utils
 
 
-class TestImages(utils.TestCase):
-    
+class ImagesTest(utils.TestCase):
+
     def setUp(self):
         self.os = openstack.OpenStack()
-        self.server = self.os.servers.create(name="testserver", 
+        self.server = self.os.servers.create(name="testserver",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
         self.server.waitForStatus('ACTIVE')
-    
+
     def tearDown(self):
     	self.server.delete()
 
     def test_get_image_details(self):
-        """        
+        """
         Verify the correct details are returned for an image
         """
-        
+
         image = self.os.images.get(1)
         self.assertIsInstance(image, images.Image)
         self.assertEqual(image.id, 1)
@@ -44,9 +44,9 @@ class TestImages(utils.TestCase):
         """
         Verify that a new image can be created and deleted
         """
-        
+
         image = self.os.images.create("Just in case",
-                                "http://172.19.0.3:8774/v1.1/servers/%s" % 
+                                "http://172.19.0.3:8774/v1.1/servers/%s" %
                                 str(self.server.id))
         self.assertIsInstance(image, images.Image)
         self.os.images.delete(image.id)

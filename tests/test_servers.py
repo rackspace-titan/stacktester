@@ -17,21 +17,20 @@ from domainobjects import openstack
 import utils
 
 
-class TestServers(utils.TestCase):
-    
+class ServersTest(utils.TestCase):
+
     def setUp(self):
         self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
-        #NOTE: Do we really want to wait for the server to build?
-        #self.server.waitForStatus('ACTIVE')
-    
+        self.server.waitForStatus('ACTIVE')
+
     def tearDown(self):
 	    self.server.delete()
 
     def test_list_servers(self):
-        """	    
+        """
         Verify that a new server is returned in the list of
         servers for the user
         """
@@ -44,27 +43,27 @@ class TestServers(utils.TestCase):
 
     def test_create_delete_server(self):
         """
-        Verify that a server instance can be created and deleted        
+        Verify that a server instance can be created and deleted
         """
-        
-        newServer = self.os.servers.create(name="testserver2", 
+
+        newServer = self.os.servers.create(name="testserver2",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
-        
-        self.assertEqual(202, newServer.status_code)        
-        #newServer.waitForStatus('ACTIVE')
+
+        self.assertEqual(202, newServer.status_code)
+        newServer.waitForStatus('ACTIVE')
         createdServer = self.os.servers.get(newServer.id)
-        self.assertEqual('testserver2', createdServer.name)                
+        self.assertEqual('testserver2', createdServer.name)
         newServer.delete()
-	#TODO: assert something here
-    
+	    #TODO: assert something here
+
     def test_update_server_name(self):
-        """         
+        """
         Verify the name of an instance can be changed
         """
-    
+
         self.server.update_name(name='modifiedName')
-        #self.server.waitForStatus('ACTIVE')
+        self.server.waitForStatus('ACTIVE')
 
         updatedServer = self.os.servers.get(self.server.id)
         self.assertEqual('modifiedName', updatedServer.name)
@@ -73,7 +72,7 @@ class TestServers(utils.TestCase):
         """
         Verify that creating a server with an unknown image ref will fail
         """
-        newServer = self.os.servers.create(name="testserver2", 
+        newServer = self.os.servers.create(name="testserver2",
 	    image="http://glance1:9292/v1/images/9999",
 	    flavor="http://172.19.0.3:8774/v1.1/flavors/3")
 
@@ -81,7 +80,7 @@ class TestServers(utils.TestCase):
         """
         Verify that creating a server with an unknown image ref will fail
         """
-        
-        newServer = self.os.servers.create(name="testserver2", 
+
+        newServer = self.os.servers.create(name="testserver2",
 	    image="http://glance1:9292/v1/images/1",
 	    flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
