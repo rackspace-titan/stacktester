@@ -25,7 +25,7 @@ def _get_env_variable(name):
     try:
         return os.environ[name]
     except KeyError:
-        print "Failed to retrieve %s" % name
+        raise Exception("Failed to retrieve %s" % name)
 
 
 def get_api_user():
