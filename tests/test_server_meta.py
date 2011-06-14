@@ -13,24 +13,22 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nose.tools import assert_equal, assert_equal, assert_raises
-from domainobjects.openstack import OpenStack
-from domainobjects.servers import Server
-from domainobjects.utils import *
+from domainobjects import openstack
+from domainobjects import servers
+import utils
 
-class TestSServers:
+
+class TestSServers(unittest.TestCase):
     
-    @classmethod
-    def setup_class(self):
-        self.os = OpenStack(get_username(), get_api_key())
+    def setUp(self):
+        self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3",
                                 meta={'testKey': 'testData'})
         self.server.waitForStatus('ACTIVE')
     
-    @classmethod
-    def teardown_class(self):
+    def tearDown(self):
 	    self.server.delete()
 
     def test_get_servers_metdata(self):
@@ -42,7 +40,7 @@ class TestSServers:
         s = self.os.servers.get(self.server)
 
         # Verify that it has the value we expect
-        assert_equal(s.metadata['testKey'], 'testData')
+        self..assertEqual(s.metadata['testKey'], 'testData')
 
     def test_create_delete_metadata(self):
         pass

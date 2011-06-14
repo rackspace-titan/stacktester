@@ -13,16 +13,15 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from domainobjects.openstack import OpenStack
-from domainobjects.flavors import Flavor
-from domainobjects.utils import *
-from nose.tools import assert_raises, assert_equal
+from domainobjects import openstack
+from domainobjects import flavors
+import utils
 
-class TestFlavors:
+
+class TestFlavors(utils.TestCase):
     
-    @classmethod
-    def setup_class(self):
-        self.os = OpenStack(get_username(), get_api_key())
+    def setUp(self):
+        self.os = openstack.OpenStack()
 
     def test_get_flavor_details(self):
 	"""        
@@ -30,9 +29,7 @@ class TestFlavors:
 	"""
 
 	flavor = self.os.flavors.get(1)
-        assert_isinstance(flavor, Flavor)
-        assert_equal(flavor.ram, 512)
-        assert_equal(flavor.disk, 0)
-        assert_equal(200, flavor.status_code)
-
-  
+        self.assertIsInstance(flavor, flavors.Flavor)
+        self.assertEqual(flavor.ram, 512)
+        self.assertEqual(flavor.disk, 0)
+        self.assertEqual(200, flavor.status_code)

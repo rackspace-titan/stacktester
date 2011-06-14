@@ -13,23 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from nose.tools import assert_equal, assert_equal, assert_raises
-from domainobjects.openstack import OpenStack
-from domainobjects.servers import Server
-from domainobjects.utils import *
+from domainobjects import openstack
+import utils
 
-class TestServers:
+
+class TestServers(utils.TestCase):
     
-    @classmethod
-    def setup_class(self):
-        self.os = OpenStack(get_username(), get_api_key())
+    def setUp(self):
+        self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
-        self.server.waitForStatus('ACTIVE')
+        #NOTE: Do we really want to wait for the server to build?
+        #self.server.waitForStatus('ACTIVE')
     
-    @classmethod
-    def teardown_class(self):
+    def tearDown(self):
 	    self.server.delete()
 
     def test_list_servers(self):
@@ -53,11 +51,12 @@ class TestServers:
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
         
-        assert_equal(202, newServer.status_code)        
-        newServer.waitForStatus('ACTIVE')
+        self.assertEqual(202, newServer.status_code)        
+        #newServer.waitForStatus('ACTIVE')
         createdServer = self.os.servers.get(newServer.id)
-        assert_equal('testserver2', createdServer.name)                
+        self.assertEqual('testserver2', createdServer.name)                
         newServer.delete()
+	#TODO: assert something here
     
     def test_update_server_name(self):
         """         
@@ -65,32 +64,24 @@ class TestServers:
         """
     
         self.server.update_name(name='modifiedName')
-        self.server.waitForStatus('ACTIVE')
+        #self.server.waitForStatus('ACTIVE')
 
         updatedServer = self.os.servers.get(self.server.id)
-        assert_equal('modifiedName', updatedServer.name)
+        self.assertEqual('modifiedName', updatedServer.name)
 
     def test_create_server_invalid_image(self):
         """
         Verify that creating a server with an unknown image ref will fail
         """
-        try:
-            newServer = self.os.servers.create(name="testserver2", 
-                    image="http://glance1:9292/v1/images/9999",
-                    flavor="http://172.19.0.3:8774/v1.1/flavors/3")
-            fail
-        except:
-            pass
+        newServer = self.os.servers.create(name="testserver2", 
+	    image="http://glance1:9292/v1/images/9999",
+	    flavor="http://172.19.0.3:8774/v1.1/flavors/3")
 
     def test_create_server_invalid_flavor(self):
         """
         Verify that creating a server with an unknown image ref will fail
         """
         
-        try:
-            newServer = self.os.servers.create(name="testserver2", 
-                    image="http://glance1:9292/v1/images/1",
-                    flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
-            fail
-        except:
-            pass
+        newServer = self.os.servers.create(name="testserver2", 
+	    image="http://glance1:9292/v1/images/1",
+	    flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")

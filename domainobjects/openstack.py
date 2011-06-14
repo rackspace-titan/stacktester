@@ -19,13 +19,12 @@ novaclient module.
 
 __version__ = '2.4'
 
-from client import OpenStackClient
-from exceptions import (OpenStackException, BadRequest,
-        Unauthorized, Forbidden, NotFound, OverLimit)
-from flavors import FlavorManager, Flavor
-from images import ImageManager, Image
-from servers import (ServerManager, Server, REBOOT_HARD,
-                                 REBOOT_SOFT)
+from domainobjects import client 
+from domainobjects import flavors
+from domainobjects import images
+from domainobjects import servers
+from domainobjects import utils
+
 
 class OpenStack(object):
     """
@@ -45,12 +44,16 @@ class OpenStack(object):
     &c.
     """
 
-    def __init__(self, username, apikey,
-                 auth_url='http://172.19.0.3:8774/v1.1/'):
-        self.client = OpenStackClient(username, apikey, auth_url)
-        self.flavors = FlavorManager(self)
-        self.images = ImageManager(self)
-        self.servers = ServerManager(self)
+    def __init__(self, api_user=None, api_key=None, api_url=None):
+        api_user = api_user or utils.get_api_user()
+        api_key = api_key or utils.get_api_key()
+        api_url = api_url or utils.get_api_url()
+
+        self.client = client.OpenStackClient(api_user, api_key, api_url)
+
+        self.flavors = flavors.FlavorManager(self)
+        self.images = images.ImageManager(self)
+        self.servers = servers.ServerManager(self)
 
     def authenticate(self):
         """

@@ -17,21 +17,20 @@ import random
 import time
 
 from domainobjects import base
-from domainobjects.utils import *
-from domainobjects.openstack import OpenStack
+from domainobjects import openstack
+import utils
 
-class TestServerActions():
 
-    @classmethod
-    def setup_class(self):
-        self.os = OpenStack(get_username(), get_api_key())
+class TestServerActions(utils.TestCase):
+
+    def setUp(self):
+        self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver",
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/1")
         self.server.waitForStatus('ACTIVE')
 
-    @classmethod
-    def teardown_class(self):
+    def tearDown(self):
         self.server.delete()
         
     def test_rebuild_server(self):
@@ -42,6 +41,7 @@ class TestServerActions():
         self.server.rebuild("http://glance1:9292/v1/images/4")
         self.server.waitForStatus('ACTIVE')
         rebuilt_server = self.os.servers.get(self.server)
+	#TODO: let's assert something here
          
 
     def test_resize_server_confirm(self):
@@ -58,7 +58,7 @@ class TestServerActions():
 
         #Verify that the server's flavor has changed
         modified_server = self.os.servers.get(self.server)
-        assertEquals(new_flavor.name, modified_server.flavorId)
+        self.assertEqual(new_flavor.name, modified_server.flavorId)
 
     def test_resize_server_revert(self):
         """
@@ -70,14 +70,14 @@ class TestServerActions():
         new_flavor = self.os.flavors.get(3)
         self.server.resize(3)
 
-        #Not checking state at the moment because this test would hang
+        #TODO: Not checking state at the moment because this test would hang
 
         # Revert the resize
         self.server.revert_resize()
 
         # Check that the was reverted to its original flavor
         modified_server = self.os.servers.get(server)
-        assertEquals(new_flavor.name, modified_server.flavorId)
+        self.assertEqual(new_flavor.name, modified_server.flavorId)
 
     def test_reboot_server(self):
         """
@@ -86,7 +86,7 @@ class TestServerActions():
 
         self.server.reboot()
 
-        #Need to verify state change
+        #TODO: Need to verify state change
 
     def test_reboot_server_hard(self):
         """
@@ -95,4 +95,4 @@ class TestServerActions():
 
         self.os.servers.reboot(self.server, type='HARD')
 
-        #Need to verify state change
+        #TODO: Need to verify state change

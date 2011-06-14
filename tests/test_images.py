@@ -13,23 +13,21 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from domainobjects.utils import *
-from nose.tools import assert_equal
-from domainobjects.openstack import OpenStack
-from domainobjects.images import Image
+from domainobjects import openstack
+from domainobjects import images
+import utils
 
-class TestImages:
+
+class TestImages(utils.TestCase):
     
-    @classmethod   
-    def setup_class(self):
-        self.os = OpenStack(get_username(), get_api_key())
+    def setUp(self):
+        self.os = openstack.OpenStack()
         self.server = self.os.servers.create(name="testserver", 
                                 image="http://glance1:9292/v1/images/3",
                                 flavor="http://172.19.0.3:8774/v1.1/flavors/3")
         self.server.waitForStatus('ACTIVE')
     
-    @classmethod
-    def teardown_class(self):
+    def tearDown(self):
     	self.server.delete()
 
     def test_get_image_details(self):
@@ -38,9 +36,9 @@ class TestImages:
         """
         
         image = self.os.images.get(1)
-        assert_isinstance(image, Image)
-        assert_equal(image.id, 1)
-        assert_equal(image.name, 'ari-tty')
+        self.assertIsInstance(image, images.Image)
+        self.assertEqual(image.id, 1)
+        self.assertEqual(image.name, 'ari-tty')
 
     def test_create_delete_image(self):
         """
@@ -50,6 +48,6 @@ class TestImages:
         image = self.os.images.create("Just in case",
                                 "http://172.19.0.3:8774/v1.1/servers/%s" % 
                                 str(self.server.id))
-        assert_isinstance(image, Image)
-        self.os.images.delete(iimage.id)
+        self.assertIsInstance(image, images.Image)
+        self.os.images.delete(image.id)
 
