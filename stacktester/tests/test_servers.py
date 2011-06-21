@@ -95,7 +95,7 @@ class ServersTest(utils.TestCase):
                             image="http://glance1:9292/v1/images/3",
                             flavor="http://172.19.0.3:8774/v1.1/flavors/3")
             newServers.append(newServer)
-            self.assertEqual(200, newServer.status_code) #TODO: make 202
+            self.assertEqual(202, newServer.status_code)
             newServer.waitForStatus('ACTIVE')
 
         servers = self.os.servers.list_details()
