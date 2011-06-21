@@ -269,7 +269,7 @@ class ServerManager(base.ManagerWithFind):
         Change the server's admin password
         """
 
-    self._action('changePassword', server, {'adminPass': password})
+        self._action('changePassword', server, {'adminPass': password})
 
     def rebuild(self, server, image):
         """
