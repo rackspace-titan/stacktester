@@ -3,7 +3,7 @@ import httplib2
 import os
 
 
-class Server(object):
+class Client(object):
 
     USER_AGENT = 'python-nova_test_client'
 
