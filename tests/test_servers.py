@@ -67,6 +67,22 @@ class ServersTest(utils.TestCase):
         for server in servers:
             self.assertNotEqual(server.id, newServer.id)
 
+    def test_create_server_from_invalid_image(self):
+        """
+        Verify that we get BadRequest when passing invalid image
+        """
+
+        self.assertRaises(
+            exceptions.BadRequest,
+            self.os.servers.create,
+            *{
+                "name"   : "testserver2",
+                "image"  : "http://glance1:9292/v1/images/321",
+                "flavor" : "http://172.19.0.3:8774/v1.1/flavors/3"
+            }
+        )
+
+
     def test_update_server_name(self):
         """
         Verify the name of an instance can be changed
