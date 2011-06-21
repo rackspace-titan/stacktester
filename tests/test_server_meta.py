@@ -29,7 +29,7 @@ class ServerMetaTest(utils.TestCase):
         self.server.waitForStatus('ACTIVE')
 
     def tearDown(self):
-	    self.server.delete()
+        self.server.delete()
 
     def test_get_servers_metdata(self):
         """

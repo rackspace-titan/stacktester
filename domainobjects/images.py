@@ -56,7 +56,7 @@ class ImageManager(base.ManagerWithFind):
         :rtype: list of :class:`Image`
         """
         return self._list("/images", "images")
-        
+
     def list_details(self):
         """
         Get a list of all images.
@@ -73,7 +73,7 @@ class ImageManager(base.ManagerWithFind):
         :param server: The :class:`Server` (or its ID) to make a snapshot of.
         :rtype: :class:`Image`
         """
-        data = {"image": {"serverRef": base.get_href(server), "name": name}}       
+        data = {"image": {"serverRef": base.get_href(server), "name": name}}
         return self._create("/images", data, "image")
 
     def delete(self, image):

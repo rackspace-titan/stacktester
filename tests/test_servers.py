@@ -27,7 +27,7 @@ class ServersTest(utils.TestCase):
         self.server.waitForStatus('ACTIVE')
 
     def tearDown(self):
-	    self.server.delete()
+        self.server.delete()
 
     def test_list_servers(self):
         """
@@ -55,7 +55,7 @@ class ServersTest(utils.TestCase):
         createdServer = self.os.servers.get(newServer.id)
         self.assertEqual('testserver2', createdServer.name)
         newServer.delete()
-	    #TODO: assert something here
+        #TODO: assert something here
 
     def test_update_server_name(self):
         """
@@ -73,8 +73,8 @@ class ServersTest(utils.TestCase):
         Verify that creating a server with an unknown image ref will fail
         """
         newServer = self.os.servers.create(name="testserver2",
-	    image="http://glance1:9292/v1/images/9999",
-	    flavor="http://172.19.0.3:8774/v1.1/flavors/3")
+        image="http://glance1:9292/v1/images/9999",
+        flavor="http://172.19.0.3:8774/v1.1/flavors/3")
 
     def test_create_server_invalid_flavor(self):
         """
@@ -82,5 +82,5 @@ class ServersTest(utils.TestCase):
         """
 
         newServer = self.os.servers.create(name="testserver2",
-	    image="http://glance1:9292/v1/images/1",
-	    flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
+        image="http://glance1:9292/v1/images/1",
+        flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
