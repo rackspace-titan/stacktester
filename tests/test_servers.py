@@ -98,7 +98,6 @@ class ServersTest(utils.TestCase):
             self.assertEqual(200, newServer.status_code) #TODO: make 202
             newServer.waitForStatus('ACTIVE')
 
-        print newServers
         servers = self.os.servers.list_details()
         for newServer in newServers:
             found = False
