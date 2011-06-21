@@ -27,10 +27,13 @@ class Server(base.Resource):
     def __repr__(self):
         return "<Server: %s>" % self.name
     
-    def waitForStatus(self, status='ACTIVE'):
-    	
+    def waitForStatus(self, status='ACTIVE', timeout=300):
+
+    	#Starting timestamp
+        start_ts = int(time.time())
+
     	s = self.manager.get(self.id)
-    	while (s.status != status):
+    	while (s.status != status and (int(time.time()) - start_ts) < (timeout * 1000)):
     		time.sleep(2)
     		s = self.manager.get(self.id)
 
