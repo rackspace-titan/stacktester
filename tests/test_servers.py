@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from domainobjects import exceptions
 from domainobjects import openstack
 import utils
 
@@ -55,7 +56,16 @@ class ServersTest(utils.TestCase):
         createdServer = self.os.servers.get(newServer.id)
         self.assertEqual('testserver2', createdServer.name)
         newServer.delete()
-        #TODO: assert something here
+        try:
+            newServer.waitForStatus('SHUTOFF')
+        except exceptions.NotFound:
+            # This is fine, just means the server disappeared
+            pass
+
+        servers = self.os.servers.list()
+        # Make sure newServer is not in server list
+        for server in servers:
+            self.assertNotEqual(server.id, newServer.id)
 
     def test_update_server_name(self):
         """
