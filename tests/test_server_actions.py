@@ -41,7 +41,7 @@ class ServerActionsTest(utils.TestCase):
         self.server.rebuild("http://glance1:9292/v1/images/4")
         self.server.waitForStatus('ACTIVE')
         rebuilt_server = self.os.servers.get(self.server)
-	    #TODO: let's assert something here
+        #TODO: let's assert something here
 
 
     def test_resize_server_confirm(self):

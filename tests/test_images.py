@@ -28,7 +28,7 @@ class ImagesTest(utils.TestCase):
         self.server.waitForStatus('ACTIVE')
 
     def tearDown(self):
-    	self.server.delete()
+        self.server.delete()
 
     def test_get_image_details(self):
         """

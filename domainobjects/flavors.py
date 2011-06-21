@@ -42,7 +42,7 @@ class FlavorManager(base.ManagerWithFind):
         :rtype: list of :class:`Flavor`.
         """
         return self._list("/flavors/detail", "flavors")
-        
+
     def list_details(self):
         """
         Get a list of all flavors.

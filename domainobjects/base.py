@@ -136,13 +136,13 @@ class Resource(object):
         return self._info == other._info
 
 def get_href(obj):
-	"""
-	Abtracts href
-	"""
-	try:
-		return obj.href
-	except AttributeError:
-		return str(obj)
+    """
+    Abtracts href
+    """
+    try:
+        return obj.href
+    except AttributeError:
+        return str(obj)
 
 def getid(obj):
     """

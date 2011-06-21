@@ -26,16 +26,16 @@ REBOOT_SOFT, REBOOT_HARD = 'SOFT', 'HARD'
 class Server(base.Resource):
     def __repr__(self):
         return "<Server: %s>" % self.name
-    
+
     def waitForStatus(self, status='ACTIVE', timeout=300):
 
         #Starting timestamp
         start_ts = int(time.time())
 
-    	s = self.manager.get(self.id)
-    	while (s.status != status and (int(time.time()) - start_ts) < (timeout * 1000)):
-    		time.sleep(2)
-    		s = self.manager.get(self.id)
+        s = self.manager.get(self.id)
+        while (s.status != status and (int(time.time()) - start_ts) < (timeout * 1000)):
+            time.sleep(2)
+            s = self.manager.get(self.id)
 
     def delete(self):
         """
@@ -263,13 +263,13 @@ class ServerManager(base.ManagerWithFind):
                      or `REBOOT_HARD` for a virtual power cycle hard reboot.
         """
         self._action('reboot', server, {'type': type})
-        
+
     def change_password(self, server, password):
         """
         Change the server's admin password
         """
-        
-        self._action('changePassword', server, {'adminPass': password})
+
+    self._action('changePassword', server, {'adminPass': password})
 
     def rebuild(self, server, image):
         """
