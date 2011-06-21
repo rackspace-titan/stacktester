@@ -29,7 +29,7 @@ class Server(base.Resource):
     
     def waitForStatus(self, status='ACTIVE', timeout=300):
 
-    	#Starting timestamp
+        #Starting timestamp
         start_ts = int(time.time())
 
     	s = self.manager.get(self.id)
