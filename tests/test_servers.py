@@ -62,10 +62,11 @@ class ServersTest(utils.TestCase):
             # This is fine, just means the server disappeared
             pass
 
-        servers = self.os.servers.list()
-        # Make sure newServer is not in server list
-        for server in servers:
-            self.assertNotEqual(server.id, newServer.id)
+        self.assertRaises(
+            exceptions.NotFound,
+            self.os.servers.get,
+            (newServer.id)
+        )
 
     def test_create_server_from_invalid_image(self):
         """
@@ -82,6 +83,44 @@ class ServersTest(utils.TestCase):
             }
         )
 
+    def test_create_list_delete_servers(self):
+        """
+        Verify that a server instance can be created and deleted
+        """
+        
+        newServers = []
+        for i in range(3):
+            newServer = self.os.servers.create(
+                            name="test_list_servers",
+                            image="http://glance1:9292/v1/images/3",
+                            flavor="http://172.19.0.3:8774/v1.1/flavors/3")
+            newServers.append(newServer)
+            self.assertEqual(200, newServer.status_code) #TODO: make 202
+            newServer.waitForStatus('ACTIVE')
+
+        print newServers
+        servers = self.os.servers.list_details()
+        for newServer in newServers:
+            found = False
+            for server in servers:
+                if server.id == newServer.id:
+                    found = True
+
+            self.assertTrue(found)
+
+        for newServer in newServers:
+            newServer.delete()
+            try:
+                newServer.waitForStatus('SHUTOFF')
+            except exceptions.NotFound:
+                # This is fine, just means the server disappeared
+                pass
+
+            self.assertRaises(
+                exceptions.NotFound,
+                self.os.servers.get,
+                (newServer.id)
+            )
 
     def test_update_server_name(self):
         """
