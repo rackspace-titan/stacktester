@@ -1,7 +1,7 @@
 
 import common.http
 
-class API(common.http.Server):
+class API(common.http.Client):
     def __init__(self, host, port, base_url, user, apikey):
         super(API, self).__init__(host, port, base_url)
         self.user = user
