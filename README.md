@@ -1,41 +1,37 @@
 Stacktester
 ===========
-<Insert a description of what the Stacktester project is here.>
 
 
-Testing Stacktester
--------------------
-Developers wishing to run the `stacktester` internal unittests should run:
+### Testing Stacktester
+Developers wishing to run `stacktester` internal unittests should run:
 > $ ./setup.py test
 
 
-Testing an OpenStack Installation (For Developers)
---------------------------------------------------
+### Testing an OpenStack Installation (For Developers)
 
-### Get the Code
+#### Get the Code
 > $ git clone git://github.com/rackspace-titan/stacktester.git
 > $ cd stacktester
 
-### Setup the Virtual Environment
+#### Setup the Virtual Environment
 > $ python setup.py venv
 
-### Edit/Review the Test Configuration
+#### Edit/Review the Test Configuration
 > $ vim etc/stacktester.cfg
 
-### Run the Test Suite
+#### Run the Test Suite
 > $ bin/stacktester --venv --verbose
 
 
-Testing an OpenStack Installation (For End-Users)
--------------------------------------------------
+### Testing an OpenStack Installation (For End-Users)
 
-### Install
+#### Install
 > $ pip install stacktester
 
-### Edit/Review the Test Configuration
+#### Edit/Review the Test Configuration
 > $ vim etc/stacktester.cfg
 
-### Run the Test Suite
+#### Run the Test Suite
 > $ stacktester --verbose
 
 
