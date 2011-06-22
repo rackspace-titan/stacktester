@@ -4,3 +4,6 @@ VENV=$TOOLS/../.venv
 
 virtualenv -q --clear --no-site-packages $VENV
 pip install --upgrade -E $VENV -r $TOOLS/pip-requires
+PYTHONPATH=$VENV:$PYTHONPATH
+python setup.py develop -d $VENV
+rm -rf stacktester.egg-info

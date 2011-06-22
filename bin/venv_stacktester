@@ -1,8 +1,5 @@
 #!/bin/bash
 BIN=`dirname $0`
 VENV=$BIN/../.venv
-OLD_PYTHONPATH=$PYTHONPATH
-
-export PYTHONPATH=$VENV
+PYTHONPATH=$VENV
 $BIN/stacktester $@
-export PYTHONPATH=$OLD_PYTHONPATH
