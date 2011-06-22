@@ -2,9 +2,11 @@
 
 import sys
 
+import nose
+
 
 def main():
-    pass
+    nose.main(module="stacktester", defaultTest="stacktester.tests")
 
 
 if __name__ == "__main__":
