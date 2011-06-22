@@ -11,7 +11,7 @@
     $ vim etc/stacktester.cfg
 
 #### Setup the Virtual Environment
-    $ python setup.py venv
+    $ tools/venv_build
 
 #### Run the Test Suite
     $ bin/venv_stacktester --verbose
