@@ -1,15 +1,35 @@
-Stacktester
-===========
+# Stacktester
+***
 
-To run unittests:
+### Testing an OpenStack Installation (For Developers)
 
-> $ ./setup.py test
+#### Get the Code
+    $ git clone git://github.com/rackspace-titan/stacktester.git
+    $ cd stacktester
+
+#### Edit/Review the Test Configuration
+    $ vim etc/stacktester.cfg
+
+#### Setup the Virtual Environment
+    $ tools/venv_build
+
+#### Run the Test Suite
+    $ bin/venv_stacktester --verbose
 
 
-To run tests against locally install nova/glance:
+<br/>
+<br/>
 
-> $ cd stacktester
 
-> $ ./setup.py develop (or sudo python setup.py install, if you want this to be more permanent)
+### Testing an OpenStack Installation (For End-Users)
 
-> $ bin/stacktester --verbose
+#### Install
+    $ pip install stacktester
+
+#### Edit/Review the Test Configuration
+    $ vim /etc/stacktester.cfg
+
+#### Run the Test Suite
+    $ stacktester --verbose
+
+
