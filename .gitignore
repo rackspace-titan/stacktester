@@ -1,6 +1,7 @@
 .venv
 *.pyc
 *.swp
+*.swo
 *~
 *.egg-info
 build
