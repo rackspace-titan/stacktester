@@ -1,11 +1,6 @@
 # Stacktester
 ***
 
-
-### Testing Stacktester
-    $ ./setup.py test
-
-
 ### Testing an OpenStack Installation (For Developers)
 
 #### Get the Code
@@ -20,6 +15,15 @@
 
 #### Run the Test Suite
     $ bin/stacktester --venv --verbose
+
+
+
+
+
+
+
+
+
 
 
 ### Testing an OpenStack Installation (For End-Users)
