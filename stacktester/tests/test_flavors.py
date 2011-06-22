@@ -4,7 +4,6 @@ from stacktester import openstack
 
 import json
 import unittest
-from subprocess import call
 
 FIXTURES = [
     {"flavorid": 1, "name": "m1.tiny", "ram": 512, "vcpus": 1, "disk": 0},
@@ -22,28 +21,11 @@ class FlavorsTest(unittest.TestCase):
         self.flavors = {}
         for FIXTURE in FIXTURES:
             self.flavors[FIXTURE["name"]] = FIXTURE
-            self._add_flavor(FIXTURE)
+            self.os.nova_api._add_flavor(FIXTURE)
 
     def tearDown(self):
        for FIXTURE in FIXTURES:
-           self._delete_flavor(FIXTURE["name"])
-
-    def _add_flavor(self, flavor):
-        #TODO: Get connection info from config
-        call(["ssh", "root@nova1", "nova-manage instance_type create", 
-                        str(flavor["name"]),
-                        str(flavor["ram"]),
-                        str(flavor["vcpus"]),
-                        str(flavor["disk"]),
-                        str(flavor["flavorid"]),
-        ]) 
-
-    def _delete_flavor(self, flavor_name):
-        #TODO: Get connection info from config
-        call(["ssh", "root@nova1", "nova-manage instance_type delete ",
-                    flavor_name,
-                    "--purge",
-            ]) 
+           self.os.nova_api._delete_flavor(FIXTURE["name"])
 
     def test_get_flavor_details(self):
         """
