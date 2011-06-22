@@ -1,4 +1,8 @@
 #!/bin/bash
 BIN=`dirname $0`
 VENV=$BIN/../.venv
-source $VENV/bin/activate && $VENV/bin/stacktester $@
+OLD_PYTHONPATH=$PYTHONPATH
+
+export PYTHONPATH=$VENV
+$BIN/stacktester $@
+export PYTHONPATH=$OLD_PYTHONPATH
