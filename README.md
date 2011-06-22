@@ -7,24 +7,18 @@
     $ git clone git://github.com/rackspace-titan/stacktester.git
     $ cd stacktester
 
-#### Setup the Virtual Environment
-    $ python setup.py venv
-
 #### Edit/Review the Test Configuration
     $ vim etc/stacktester.cfg
 
+#### Setup the Virtual Environment
+    $ python setup.py venv
+
 #### Run the Test Suite
-    $ bin/stacktester --venv --verbose
+    $ bin/venv_stacktester --verbose
 
 
 <br/>
 <br/>
-
-
-
-
-
-
 
 
 ### Testing an OpenStack Installation (For End-Users)
@@ -33,7 +27,7 @@
     $ pip install stacktester
 
 #### Edit/Review the Test Configuration
-    $ vim etc/stacktester.cfg
+    $ vim /etc/stacktester.cfg
 
 #### Run the Test Suite
     $ stacktester --verbose
