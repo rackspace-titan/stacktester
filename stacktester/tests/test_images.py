@@ -115,7 +115,6 @@ class ImagesTest(unittest.TestCase):
 
             self.assertEqual(response['status'], '200')
             result = json.loads(body)
-            print result, expected
             self._assert_image_metadata(result, expected)
 
     def test_get_image_metadata_item(self):
