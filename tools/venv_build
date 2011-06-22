@@ -1,0 +1,8 @@
+#!/bin/bash
+TOOLS=`dirname $0`
+STACKTESTER=$TOOLS/..
+VENV=$TOOLS/../.venv
+
+virtualenv -q --clear --no-site-packages $VENV
+pip install --upgrade -E $VENV -r $TOOLS/pip-requires
+pip install --upgrade -E $VENV $STACKTESTER
