@@ -22,5 +22,5 @@ class Client(object):
             params['body'] = kwargs.get('body')
 
         req_url = "%s/%s" % (self.base_url, url)
-        resp, body = self.http_obj.request(req_url, method, **kwargs)
+        resp, body = self.http_obj.request(req_url, method, **params)
         return resp, body
