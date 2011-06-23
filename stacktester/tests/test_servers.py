@@ -68,7 +68,7 @@ class ServersTest(unittest.TestCase):
             body=body)
 
         # Raises TimeOutException on failure
-        self.os.nova_api.wait_for_server_status, (serverid, '404')
+        self.os.nova_api.wait_for_response_status, (serverid, 404)
 
     #def test_update_server_name(self):
         #"""
