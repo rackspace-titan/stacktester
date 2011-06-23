@@ -42,16 +42,14 @@ class FlavorsTest(unittest.TestCase):
             body_dict = json.loads(body)
 
             #Make sure result looks like a flavor
-            has_flavor_in_response = body_dict.has_key('flavor')
-            self.assertTrue(has_flavor_in_response)
+            self.assertTrue(body_dict.has_key('flavor'))
             
-            if has_flavor_in_response:
-                actual = json.loads(body)['flavor']
+            actual = body_dict['flavor']
 
-                self.assertTrue(actual.has_key('name'))
-                self.assertTrue(flavor.has_key('id'))
-                self.assertTrue(actual.has_key('ram'))
-                self.assertTrue(actual.has_key('disk'))
+            self.assertTrue(actual.has_key('name'))
+            self.assertTrue(actual.has_key('id'))
+            self.assertTrue(actual.has_key('ram'))
+            self.assertTrue(actual.has_key('disk'))
 
     def test_get_flavors(self):
         """
@@ -64,14 +62,12 @@ class FlavorsTest(unittest.TestCase):
         body_dict = json.loads(body)
 
         #Make sure result looks like a list of flavors
-        has_flavors_in_response = body_dict.has_key('flavors')
-        self.assertTrue(has_flavors_in_response)
+        self.assertTrue(body_dict.has_key('flavors'))
         
-        if has_flavors_in_response:
-            flavors = json.loads(body)['flavors']
-            for flavor in flavors:
-                self.assertTrue(flavor.has_key('name'))
-                self.assertTrue(flavor.has_key('id'))
+        flavors = json.loads(body)['flavors']
+        for flavor in flavors:
+            self.assertTrue(flavor.has_key('name'))
+            self.assertTrue(flavor.has_key('id'))
 
     def test_get_flavors_detail(self):
         """
@@ -84,13 +80,11 @@ class FlavorsTest(unittest.TestCase):
         body_dict = json.loads(body)
 
         #Make sure result looks like a list of flavors
-        has_flavors_in_response = body_dict.has_key('flavors')
-        self.assertTrue(has_flavors_in_response)
+        self.assertTrue(body_dict.has_key('flavors'))
         
-        if has_flavors_in_response:
-            flavors = json.loads(body)['flavors']
-            for flavor in flavors:
-                self.assertTrue(flavor.has_key('name'))
-                self.assertTrue(flavor.has_key('id'))
-                self.assertTrue(flavor.has_key('ram'))
-                self.assertTrue(flavor.has_key('disk'))
+        flavors = json.loads(body)['flavors']
+        for flavor in flavors:
+            self.assertTrue(flavor.has_key('name'))
+            self.assertTrue(flavor.has_key('id'))
+            self.assertTrue(flavor.has_key('ram'))
+            self.assertTrue(flavor.has_key('disk'))
