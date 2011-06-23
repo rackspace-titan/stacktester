@@ -28,6 +28,14 @@ class Client(object):
                 raise exceptions.TimeoutException
             time.sleep(interval)
 
+    def poll_request_status(self, method, url, status=200, **kwargs):
+
+        def check_response(resp, body):
+            return resp['status'] == str(status)
+
+        self.poll_request(method, url, check_response, **kwargs)
+
+
     def request(self, method, url, **kwargs):
         self.http_obj = httplib2.Http()
 

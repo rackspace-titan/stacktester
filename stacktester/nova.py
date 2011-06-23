@@ -20,7 +20,7 @@ class API(common.http.Client):
 
         #TODO: use management_url
 
-    def wait_for_server_status(self, serverid, status='ACTIVE', timeout=180):
+    def wait_for_server_status(self, serverid, status='ACTIVE', **kwargs):
 
         def check_response(resp, body):
             data = json.loads(body)
@@ -30,18 +30,7 @@ class API(common.http.Client):
             'GET', 
             '/servers/%s' % serverid, 
             check_response, 
-            timeout=timeout)
-
-    def wait_for_response_status(self, serverid, status=200, timeout=180):
-
-        def check_response(resp, body):
-            return resp['status'] == str(status)
-
-        self.poll_request(
-            'GET', 
-            '/servers/%s' % serverid, 
-            check_response, 
-            timeout=timeout)
+            **kwargs)
 
     def request(self, method, url, **kwargs):
         headers = kwargs.get('headers', {})
