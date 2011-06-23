@@ -34,12 +34,12 @@ class ImagesTest(unittest.TestCase):
         self.os = openstack.Manager()
         self.images = {}
         for FIXTURE in FIXTURES:
-            meta = self.os.glance_client.add_image(FIXTURE, None)
+            meta = self.os.glance.add_image(FIXTURE, None)
             self.images[str(meta['id'])] = meta
 
     def tearDown(self):
         for (image_id, meta) in self.images.items():
-            self.os.glance_client.delete_image(image_id)
+            self.os.glance.delete_image(image_id)
 
     def _assert_image_basic(self, image, expected):
         self.assertEqual(expected['id'], image['id'])
@@ -71,7 +71,7 @@ class ImagesTest(unittest.TestCase):
 
     def test_get_images(self):
         """Verify the correct list of image entities is returned"""
-        response, body = self.os.nova_api.request('GET', '/images')
+        response, body = self.os.nova.request('GET', '/images')
 
         self.assertEqual(response['status'], '200')
         result = json.loads(body)['images']
@@ -85,7 +85,7 @@ class ImagesTest(unittest.TestCase):
 
     def test_get_images_detailed(self):
         """Verify the correct list of detailed image entities is returned"""
-        response, body = self.os.nova_api.request('GET', '/images/detail')
+        response, body = self.os.nova.request('GET', '/images/detail')
 
         self.assertEqual(response['status'], '200')
         result = json.loads(body)['images']
@@ -101,7 +101,7 @@ class ImagesTest(unittest.TestCase):
         """Verify the correct entities are returned for each image"""
         for (image_id, expected) in self.images.items():
             url = '/images/%s' % (image_id,)
-            response, body = self.os.nova_api.request('GET', url)
+            response, body = self.os.nova.request('GET', url)
 
             self.assertEqual(response['status'], '200')
             result = json.loads(body)['image']
@@ -111,7 +111,7 @@ class ImagesTest(unittest.TestCase):
         """Verify correct list of metadata entities are returned per image"""
         for (image_id, expected) in self.images.items():
             url = '/images/%s/meta' % (image_id,)
-            response, body = self.os.nova_api.request('GET', url)
+            response, body = self.os.nova.request('GET', url)
 
             self.assertEqual(response['status'], '200')
             result = json.loads(body)
@@ -122,7 +122,7 @@ class ImagesTest(unittest.TestCase):
         for (image_id, expected) in self.images.items():
             for (meta_key, meta_value) in expected['properties'].items():
                 url = '/images/%s/meta/%s' % (image_id, meta_key)
-                response, body = self.os.nova_api.request('GET', url)
+                response, body = self.os.nova.request('GET', url)
 
                 self.assertEqual(response['status'], '200')
                 result = json.loads(body)

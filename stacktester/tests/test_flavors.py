@@ -22,7 +22,7 @@ class FlavorsTest(unittest.TestCase):
 
     def _get_flavors(self):
         url = '/flavors'
-        response, body = self.os.nova_api.request('GET', url)
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         flavors = json.loads(body)['flavors']
         return flavors
@@ -37,7 +37,7 @@ class FlavorsTest(unittest.TestCase):
         for flavor in flavors:
             flavor_id = flavor['id']
             url = '/flavors/%s' % flavor_id
-            response, body = self.os.nova_api.request('GET', url)
+            response, body = self.os.nova.request('GET', url)
             self.assertEqual(response['status'], '200')
             body_dict = json.loads(body)
 
@@ -59,7 +59,7 @@ class FlavorsTest(unittest.TestCase):
         """
 
         url = '/flavors'
-        response, body = self.os.nova_api.request('GET', url)
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         body_dict = json.loads(body)
 
@@ -79,7 +79,7 @@ class FlavorsTest(unittest.TestCase):
         """
 
         url = '/flavors/detail'
-        response, body = self.os.nova_api.request('GET', url)
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         body_dict = json.loads(body)
 
