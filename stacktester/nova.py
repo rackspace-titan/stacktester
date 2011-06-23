@@ -8,6 +8,7 @@ class API(common.http.Client):
         super(API, self).__init__(host, port, base_url)
         self.user = user
         self.apikey = apikey
+        self.host = host
 
     def _authenticate(self, user, api_key):
         headers = {'X-Auth-User': user, 'X-Auth-Key': api_key}
@@ -40,7 +41,8 @@ class API(common.http.Client):
 
     def _add_flavor(self, flavor):
         #TODO: Get connection info from config
-        subprocess.call(["ssh", "root@nova1", "nova-manage instance_type create", 
+        subprocess.call(["ssh", "root@%s" % self.host,
+                        "nova-manage instance_type create", 
                         str(flavor["name"]),
                         str(flavor["ram"]),
                         str(flavor["vcpus"]),
@@ -50,7 +52,8 @@ class API(common.http.Client):
 
     def _delete_flavor(self, flavor_name):
         #TODO: Get connection info from config
-        subprocess.call(["ssh", "root@nova1", "nova-manage instance_type delete ",
+        subprocess.call(["ssh", "root@%s" % self.host,
+                    "nova-manage instance_type delete ",
                     flavor_name,
                     "--purge",
             ]) 
