@@ -16,15 +16,17 @@ class Client(object):
     def poll_request(self, method, url, check_response, **kwargs):
 
         timeout = kwargs.pop('timeout', 180)
+        interval = kwargs.pop('interval', 2)
         # Start timestamp
         start_ts = int(time.time())
 
-        resp, body = self.request(method, url, **kwargs)
-        while (not check_response(resp, body)):
+        while True:
+            resp, body = self.request(method, url, **kwargs)
+            if (check_response(resp, body)):
+                break
             if (int(time.time()) - start_ts >= (timeout * 1000)):
                 raise exceptions.TimeoutException
-            time.sleep(2)
-            resp, body = self.request(method, url, **kwargs)
+            time.sleep(interval)
 
     def request(self, method, url, **kwargs):
         self.http_obj = httplib2.Http()
@@ -32,7 +34,7 @@ class Client(object):
         params = {}
         params['headers'] = {'User-Agent': self.USER_AGENT}
         params['headers'].update(kwargs.get('headers', {}))
-        if 'Content-Type' not in kwargs.get('headers',{}):
+        if 'Content-Type' not in params.get('headers',{}):
             params['headers']['Content-Type'] = 'application/json'
 
         if 'body' in kwargs:
