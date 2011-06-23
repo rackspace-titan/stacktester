@@ -17,10 +17,10 @@ from stacktester import exceptions
 from stacktester import openstack
 
 import json
-import unittest
+import unittest2
 
 
-class ServersTest(unittest.TestCase):
+class ServersTest(unittest2.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()

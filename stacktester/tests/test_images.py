@@ -2,7 +2,7 @@
 from stacktester import openstack
 
 import json
-import unittest
+import unittest2
 
 
 FIXTURES = [
@@ -28,7 +28,7 @@ FIXTURES = [
 ]
 
 
-class ImagesTest(unittest.TestCase):
+class ImagesTest(unittest2.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
