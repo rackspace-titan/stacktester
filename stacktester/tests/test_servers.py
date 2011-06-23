@@ -18,7 +18,7 @@ from stacktester import exceptions
 from stacktester import openstack
 
 import json
-import unittest
+import unittest2 as unittest
 
 
 SERVER_FIXTURES = [

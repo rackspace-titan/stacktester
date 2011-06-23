@@ -3,7 +3,7 @@
 from stacktester import openstack
 
 import json
-import unittest
+import unittest2 as unittest
 
 #TODO: only for optional setup
 FIXTURES = [
