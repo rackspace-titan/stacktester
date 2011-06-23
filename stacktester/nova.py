@@ -29,7 +29,7 @@ class API(common.http.Client):
             else:
                 return data['server']['status'] == status
 
-        return self.poll_request(
+        self.poll_request(
             'GET', 
             '/servers/%s' % serverid, 
             check_response, 

@@ -1,3 +1,4 @@
+from stacktester import exceptions
 
 import httplib2
 import os
@@ -19,17 +20,11 @@ class Client(object):
         start_ts = int(time.time())
 
         resp, body = self.request(method, url, **kwargs)
-        while ( (int(time.time()) - start_ts < (timeout * 1000) 
-                 and not check_response(resp, body))):
+        while (not check_response(resp, body)):
+            if (int(time.time()) - start_ts >= (timeout * 1000)):
+                raise exceptions.TimeoutException
             time.sleep(2)
             resp, body = self.request(method, url, **kwargs)
-
-        #TODO we can probably make this better so we don't have
-        # to run check_response again, but I want this func to
-        # return True/False so we know if it timed out or actually
-        # got the response we wanted
-        return check_response(resp, body)
-        
 
     def request(self, method, url, **kwargs):
         self.http_obj = httplib2.Http()

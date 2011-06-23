@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
+from stacktester import exceptions
 from stacktester import openstack
 
 import json
@@ -57,8 +58,7 @@ class ServersTest(unittest.TestCase):
         data = json.loads(body)
         serverid = data['server']['id']
         self.assertEqual(200, int(response['status']))
-        status = self.os.nova_api.wait_for_server_status(serverid, 'ACTIVE')
-        self.assertTrue(status)
+        self.os.nova_api.wait_for_server_status(serverid, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 
@@ -67,8 +67,8 @@ class ServersTest(unittest.TestCase):
             '/servers/%s' % serverid, 
             body=body)
 
-        status = self.os.nova_api.wait_for_server_status(serverid, '404')
-        self.assertTrue(status)
+        # Raises TimeOutException on failure
+        self.os.nova_api.wait_for_server_status, (serverid, '404')
 
     #def test_update_server_name(self):
         #"""
