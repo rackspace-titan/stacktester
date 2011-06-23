@@ -33,23 +33,22 @@ SERVER_FIXTURES = [
 
 IMAGE_FIXTURES = [
     {
-        'name': 'Image1',
-        'disk_format': 'vdi',
-        'container_format': 'ovf',
-        'is_public': False,
-        'properties': {
-            'key1': 'value1',
-        }
+        'name': 'ramdisk',
+        'disk_format': 'ari',
+        'container_format': 'ari',
+        'is_public': True,
     },
     {
-        'name': 'Image2',
-        'disk_format': 'vdi',
-        'container_format': 'ovf',
+        'name': 'kernel',
+        'disk_format': 'aki',
+        'container_format': 'aki',
         'is_public': True,
-        'properties': {
-            'key2': 'value2',
-            'key3': 'value3',
-        }
+    },
+    {
+        'name': 'image',
+        'disk_format': 'ami',
+        'container_format': 'ami',
+        'is_public': True,
     },
 ]
 
@@ -58,10 +57,20 @@ class ServersTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-        #self.config = stacktester.CONFIG
+        self.config = stacktester.config.StackConfig()
+
+        self.images = {}
+        for IMAGE_FIXTURE in IMAGE_FIXTURES:
+            IMAGE_FIXTURE['location'] = self.config.glance.get(
+                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
+            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
+            self.images[meta['name']] = {'id': meta['id']}
+
+
 
     def tearDown(self):
-        pass
+        for image in self.images.itervalues():
+            self.os.glance.delete_image(image['id'])
 
     #def test_list_servers(self):
         #"""
@@ -123,7 +132,7 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
         
-        #self.assertEqual(resp['status'], '202')
+        self.assertEqual(resp['status'], '202')
         data = json.loads(body)
         serverid = data['server']['id']
         self.assertTrue(data['server']['name'], 'testserver')
