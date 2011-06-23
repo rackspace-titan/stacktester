@@ -53,22 +53,22 @@ class ServersTest(unittest.TestCase):
             }
         })
 
-        response, body = self.os.nova_api.request('POST','/servers',body=body)
+        response, body = self.os.nova.request('POST','/servers',body=body)
 
         data = json.loads(body)
         serverid = data['server']['id']
         self.assertEqual(200, int(response['status']))
-        self.os.nova_api.wait_for_server_status(serverid, 'ACTIVE')
+        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 
-        response, body = self.os.nova_api.request(
+        response, body = self.os.nova.request(
             'DELETE',
-            '/servers/%s' % serverid, 
+            '/servers/%s' % serverid,
             body=body)
 
         # Raises TimeOutException on failure
-        self.os.nova_api.poll_request_status('GET', '/servers/%s' % serverid, 404)
+        self.os.nova.poll_request_status('GET', '/servers/%s' % serverid, 404)
 
     #def test_update_server_name(self):
         #"""

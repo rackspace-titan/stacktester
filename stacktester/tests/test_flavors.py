@@ -11,7 +11,7 @@ FIXTURES = [
     {"flavorid": 3, "name": "m1.medium", "ram": 4096, "vcpus": 2, "disk": 40},
     {"flavorid": 4, "name": "m1.large", "ram": 8192, "vcpus": 4, "disk": 80},
     {"flavorid": 5, "name": "m1.xlarge", "ram": 16384, "vcpus": 8, "disk": 160},
-] 
+]
 
 
 class FlavorsTest(unittest.TestCase):
@@ -21,11 +21,11 @@ class FlavorsTest(unittest.TestCase):
         self.flavors = {}
         for FIXTURE in FIXTURES:
             self.flavors[FIXTURE["name"]] = FIXTURE
-            self.os.nova_api._add_flavor(FIXTURE)
+            self.os.nova.add_flavor(FIXTURE)
 
     def tearDown(self):
        for FIXTURE in FIXTURES:
-           self.os.nova_api._delete_flavor(FIXTURE["name"])
+           self.os.nova.delete_flavor(FIXTURE["name"])
 
     def test_get_flavor_details(self):
         """
@@ -34,7 +34,7 @@ class FlavorsTest(unittest.TestCase):
         self.assertEqual(len(self.flavors.items()), len(FIXTURES))
         for (flavor_name, expected) in self.flavors.items():
             url = '/flavors/%s' % (expected['flavorid'])
-            response, body = self.os.nova_api.request('GET', url)
+            response, body = self.os.nova.request('GET', url)
             self.assertEqual(response['status'], '200')
             actual = json.loads(body)['flavor']
             self.assertEqual(expected['name'], actual['name'])
@@ -47,13 +47,13 @@ class FlavorsTest(unittest.TestCase):
         """
 
         url = '/flavors'
-        response, body = self.os.nova_api.request('GET', url)
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         actuals = json.loads(body)['flavors']
 
         for actual in actuals:
             print actual
-            
+
             expected= self.flavors[actual['name']]
 
             self.assertEqual(response['status'], '200')
@@ -65,13 +65,13 @@ class FlavorsTest(unittest.TestCase):
         """
 
         url = '/flavors/detail'
-        response, body = self.os.nova_api.request('GET', url)
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         actuals = json.loads(body)['flavors']
 
         for actual in actuals:
             print actual
-            
+
             expected= self.flavors[actual['name']]
 
             self.assertEqual(response['status'], '200')
