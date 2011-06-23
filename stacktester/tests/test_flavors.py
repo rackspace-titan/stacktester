@@ -5,41 +5,51 @@ from stacktester import openstack
 import json
 import unittest
 
+#TODO: only for optional setup
 FIXTURES = [
     {"flavorid": 1, "name": "m1.tiny", "ram": 512, "vcpus": 1, "disk": 0},
     {"flavorid": 2, "name": "m1.small", "ram": 2048, "vcpus": 1, "disk": 20},
-    {"flavorid": 3, "name": "m1.medium", "ram": 4096, "vcpus": 2, "disk": 40},
-    {"flavorid": 4, "name": "m1.large", "ram": 8192, "vcpus": 4, "disk": 80},
-    {"flavorid": 5, "name": "m1.xlarge", "ram": 16384, "vcpus": 8, "disk": 160},
-]
+] 
 
 
 class FlavorsTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-        self.flavors = {}
-        for FIXTURE in FIXTURES:
-            self.flavors[FIXTURE["name"]] = FIXTURE
-            self.os.nova.add_flavor(FIXTURE)
 
     def tearDown(self):
-       for FIXTURE in FIXTURES:
-           self.os.nova.delete_flavor(FIXTURE["name"])
+        pass
+
+    def _get_flavors(self):
+        url = '/flavors'
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(response['status'], '200')
+        flavors = json.loads(body)['flavors']
+        return flavors
 
     def test_get_flavor_details(self):
         """
         Verify the expected details are returned for a flavor
         """
-        self.assertEqual(len(self.flavors.items()), len(FIXTURES))
-        for (flavor_name, expected) in self.flavors.items():
-            url = '/flavors/%s' % (expected['flavorid'])
+
+        flavors = self._get_flavors()
+
+        for flavor in flavors:
+            flavor_id = flavor['id']
+            url = '/flavors/%s' % flavor_id
             response, body = self.os.nova.request('GET', url)
             self.assertEqual(response['status'], '200')
-            actual = json.loads(body)['flavor']
-            self.assertEqual(expected['name'], actual['name'])
-            self.assertEqual(expected['ram'], actual['ram'])
-            self.assertEqual(expected['disk'], actual['disk'])
+            body_dict = json.loads(body)
+
+            #Make sure result looks like a flavor
+            self.assertTrue(body_dict.has_key('flavor'))
+            
+            actual = body_dict['flavor']
+
+            self.assertTrue(actual.has_key('name'))
+            self.assertTrue(actual.has_key('id'))
+            self.assertTrue(actual.has_key('ram'))
+            self.assertTrue(actual.has_key('disk'))
 
     def test_get_flavors(self):
         """
@@ -49,32 +59,32 @@ class FlavorsTest(unittest.TestCase):
         url = '/flavors'
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
-        actuals = json.loads(body)['flavors']
+        body_dict = json.loads(body)
 
-        for actual in actuals:
-            print actual
-
-            expected= self.flavors[actual['name']]
-
-            self.assertEqual(response['status'], '200')
-            self.assertEqual(expected['name'], actual['name'])
+        #Make sure result looks like a list of flavors
+        self.assertTrue(body_dict.has_key('flavors'))
+        
+        flavors = json.loads(body)['flavors']
+        for flavor in flavors:
+            self.assertTrue(flavor.has_key('name'))
+            self.assertTrue(flavor.has_key('id'))
 
     def test_get_flavors_detail(self):
         """
-        Verify the expected flavors are returned
+        Verify the detailed expected flavors are returned
         """
 
         url = '/flavors/detail'
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
-        actuals = json.loads(body)['flavors']
+        body_dict = json.loads(body)
 
-        for actual in actuals:
-            print actual
-
-            expected= self.flavors[actual['name']]
-
-            self.assertEqual(response['status'], '200')
-            self.assertEqual(expected['name'], actual['name'])
-            self.assertEqual(expected['disk'], actual['disk'])
-            self.assertEqual(expected['ram'], actual['ram'])
+        #Make sure result looks like a list of flavors
+        self.assertTrue(body_dict.has_key('flavors'))
+        
+        flavors = json.loads(body)['flavors']
+        for flavor in flavors:
+            self.assertTrue(flavor.has_key('name'))
+            self.assertTrue(flavor.has_key('id'))
+            self.assertTrue(flavor.has_key('ram'))
+            self.assertTrue(flavor.has_key('disk'))
