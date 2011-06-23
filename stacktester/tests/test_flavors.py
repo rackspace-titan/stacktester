@@ -16,14 +16,9 @@ class FlavorsTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-        self.flavors = {}
-        for FIXTURE in FIXTURES:
-            self.flavors[FIXTURE["name"]] = FIXTURE
-            self.os.nova_admin.add_flavor(FIXTURE)
 
     def tearDown(self):
-       for FIXTURE in FIXTURES:
-           self.os.nova_admin.delete_flavor(FIXTURE["name"])
+        pass
 
     def _get_flavors(self):
         url = '/flavors'
