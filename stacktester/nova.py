@@ -38,7 +38,7 @@ class API(common.http.Client):
             print "Failed to authenticate user"
             raise
 
-        #TODO: use management_url <== what does this mean?
+        #TODO: use management_url
 
     def wait_for_server_status(self, server_id, status='ACTIVE', **kwargs):
         """Wait for the server status to be equal to the status passed in.
