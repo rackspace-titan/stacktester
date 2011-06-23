@@ -11,10 +11,6 @@ import stacktester.config
 def main():
     options, args = parse_options()
     stacktester.config.StackConfig._path = os.path.abspath(options.config)
-<<<<<<< HEAD
-    args = ["-v"]
-    nose.main(module="stacktester", defaultTest="stacktester.tests", argv=args)
-=======
     nose_argv = [sys.argv[0]]
 
     if options.verbose:
@@ -24,7 +20,6 @@ def main():
     nose.main(module="stacktester", 
               argv=nose_argv, 
               defaultTest="stacktester.tests")
->>>>>>> 340785463d7f8a5fd1ccfc78fbcc68b9565dbb74
 
 
 def parse_options():
