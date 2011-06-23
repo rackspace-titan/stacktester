@@ -57,7 +57,7 @@ class ServersTest(unittest.TestCase):
 
         data = json.loads(body)
         serverid = data['server']['id']
-        self.assertEqual(202, int(response['status']))
+        self.assertEqual(200, int(response['status']))
         self.os.nova_api.wait_for_server_status(serverid, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
@@ -68,7 +68,7 @@ class ServersTest(unittest.TestCase):
             body=body)
 
         # Raises TimeOutException on failure
-        self.os.nova_api.wait_for_response_status, (serverid, 404)
+        self.os.nova_api.wait_for_response_status(serverid, 404)
 
     #def test_update_server_name(self):
         #"""
