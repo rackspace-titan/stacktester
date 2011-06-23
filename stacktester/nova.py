@@ -94,13 +94,13 @@ class AdminClient(object):
 
     def _connect(self):
         """Setup the SSH client to connect to the target server."""
-        self._silence_paramiko_logging()
+        self._set_paramiko_logging()
         client = paramiko.SSHClient()
         client.load_system_host_keys()
         client.connect(self.host, username=self.ssh_username)
         return client
 
-    def _silence_paramiko_logging(self):
+    def _set_paramiko_logging(self):
         """Move from DEBUG -> INFO level logging on paramiko."""
         logger = logging.getLogger("paramiko.transport")
         logger.setLevel(logging.WARN)
