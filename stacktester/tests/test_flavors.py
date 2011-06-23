@@ -3,7 +3,7 @@
 from stacktester import openstack
 
 import json
-import unittest2
+import unittest2 as unittest
 
 FIXTURES = [
     {"flavorid": 1, "name": "m1.tiny", "ram": 512, "vcpus": 1, "disk": 0},
@@ -14,7 +14,7 @@ FIXTURES = [
 ]
 
 
-class FlavorsTest(unittest2.TestCase):
+class FlavorsTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
