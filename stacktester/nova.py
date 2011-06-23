@@ -95,10 +95,10 @@ class AdminClient(object):
     def _connect(self):
         """Setup the SSH client to connect to the target server."""
         self._silence_paramiko_logging()
-        transport = paramiko.Transport(self.host)
-        transport.setDaemon(True)
-        transport.connect(username=self.ssh_username)
-        return transport
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.connect(self.host, username=self.ssh_username)
+        return client
 
     def _silence_paramiko_logging(self):
         """Move from DEBUG -> INFO level logging on paramiko."""
@@ -142,13 +142,5 @@ class AdminClient(object):
         :returns: None
 
         """
-        #TODO: Get connection info from config
-        #TODO: Support passwords
-        #TODO: Use paramiko
-        subprocess.call([
-            "ssh",
-            "root@nova1",
-            "nova-manage instance_type delete ",
-            flavor_name,
-            "--purge",
-        ])
+        self._ssh.exec_command("nova-manage instance_type delete "
+                               "%(flavor_name)s --purge" % locals())
