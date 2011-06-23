@@ -10,17 +10,19 @@ class Manager(object):
     def __init__(self):
         config = stacktester.config.StackConfig()
         self.nova = self._load_nova(config)
+        self.nova_admin = self._load_nova_admin(config)
         self.glance = self._load_glance(config)
 
     def _load_nova(self, config):
-        host = config.nova.host
-        port = config.nova.port
-        base_url = config.nova.base_url
-        user = config.nova.username
-        api_key = config.nova.api_key
-        return stacktester.nova.API(host, port, base_url, user, api_key)
+        return stacktester.nova.API(config.nova.host,
+                                    config.nova.port,
+                                    config.nova.base_url,
+                                    config.nova.username,
+                                    config.nova.api_key)
+
+    def _load_nova_admin(self, config):
+        return stacktester.nova.AdminClient(config.nova.host,
+                                            config.nova.ssh_username)
 
     def _load_glance(self, config):
-        host = config.glance.host
-        port = config.glance.port
-        return glance.client.Client(host, port)
+        return glance.client.Client(config.glance.host, config.glance.port)

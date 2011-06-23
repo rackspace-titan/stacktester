@@ -21,11 +21,11 @@ class FlavorsTest(unittest.TestCase):
         self.flavors = {}
         for FIXTURE in FIXTURES:
             self.flavors[FIXTURE["name"]] = FIXTURE
-            self.os.nova.add_flavor(FIXTURE)
+            self.os.nova_admin.add_flavor(FIXTURE)
 
     def tearDown(self):
        for FIXTURE in FIXTURES:
-           self.os.nova.delete_flavor(FIXTURE["name"])
+           self.os.nova_admin.delete_flavor(FIXTURE["name"])
 
     def test_get_flavor_details(self):
         """
