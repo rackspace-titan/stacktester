@@ -2,7 +2,7 @@
 from stacktester import openstack
 
 import json
-import unittest
+import unittest2 as unittest
 
 
 FIXTURES = [
