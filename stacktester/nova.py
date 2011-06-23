@@ -20,11 +20,14 @@ class API(common.http.Client):
 
         #TODO: use management_url
 
-    def wait_for_server_status(self, serverid, status="ACTIVE", timeout=180):
+    def wait_for_server_status(self, serverid, status='ACTIVE', timeout=180):
+
         def check_response(resp, body):
             data = json.loads(body)
-            print resp, '\n', data, '\n\n'
-            return data['server']['status'] == status
+            if status.isdigit():
+                return resp['status'] == status
+            else:
+                return data['server']['status'] == status
 
         return self.poll_request(
             'GET', 
