@@ -1,5 +1,6 @@
 
 import common.http
+import json
 import subprocess
 
 class API(common.http.Client):
@@ -18,6 +19,18 @@ class API(common.http.Client):
             raise
 
         #TODO: use management_url
+
+    def wait_for_server_status(self, serverid, status='ACTIVE', **kwargs):
+
+        def check_response(resp, body):
+            data = json.loads(body)
+            return data['server']['status'] == status
+
+        self.poll_request(
+            'GET', 
+            '/servers/%s' % serverid, 
+            check_response, 
+            **kwargs)
 
     def request(self, method, url, **kwargs):
         headers = kwargs.get('headers', {})
