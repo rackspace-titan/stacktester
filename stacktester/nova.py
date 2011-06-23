@@ -101,7 +101,7 @@ class AdminClient(object):
         return client
 
     def _set_paramiko_logging(self):
-        """Move from DEBUG -> INFO level logging on paramiko."""
+        """Move from DEBUG -> WARN level logging on paramiko."""
         logger = logging.getLogger("paramiko.transport")
         logger.setLevel(logging.WARN)
 
