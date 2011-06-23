@@ -1,12 +1,26 @@
 #!/usr/bin/env python
 
+import optparse
 import sys
 
 import nose
 
+import stacktester
+
 
 def main():
+    options = parse_options_or_die()
+    stacktester.CONFIG = stacktester.config.load_config(options.config)
     nose.main(module="stacktester", defaultTest="stacktester.tests")
+
+
+def parse_options_or_die():
+    parser = optparse.OptionParser()
+    parser.add_option("-c", "--config", dest="config", metavar="FILE",
+                      help="Load configuration from FILE.",
+                      default="etc/stacktester.cfg")
+    options, args = parser.parse_args()
+    return options
 
 
 if __name__ == "__main__":
