@@ -44,6 +44,11 @@ class NovaConfig(object):
         """Username to use when SSHing to Nova API node. Defaults to 'root'."""
         return self.get("ssh_username", "root")
 
+    @property
+    def ssh_port(self):
+        """Port to use for SSHing to Nova API node. Defaults to 22."""
+        return int(self.get("ssh_port", 22))
+
 
 class GlanceConfig(object):
     """Provides configuration information for connecting to Glance."""
