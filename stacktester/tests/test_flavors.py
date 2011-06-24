@@ -9,7 +9,7 @@ import unittest2 as unittest
 FIXTURES = [
     {"flavorid": 1, "name": "m1.tiny", "ram": 512, "vcpus": 1, "disk": 0},
     {"flavorid": 2, "name": "m1.small", "ram": 2048, "vcpus": 1, "disk": 20},
-] 
+]
 
 
 class FlavorsTest(unittest.TestCase):
@@ -43,7 +43,7 @@ class FlavorsTest(unittest.TestCase):
 
             #Make sure result looks like a flavor
             self.assertTrue(body_dict.has_key('flavor'))
-            
+
             actual = body_dict['flavor']
 
             self.assertTrue(actual.has_key('name'))
@@ -63,7 +63,7 @@ class FlavorsTest(unittest.TestCase):
 
         #Make sure result looks like a list of flavors
         self.assertTrue(body_dict.has_key('flavors'))
-        
+
         flavors = json.loads(body)['flavors']
         for flavor in flavors:
             self.assertTrue(flavor.has_key('name'))
@@ -81,7 +81,7 @@ class FlavorsTest(unittest.TestCase):
 
         #Make sure result looks like a list of flavors
         self.assertTrue(body_dict.has_key('flavors'))
-        
+
         flavors = json.loads(body)['flavors']
         for flavor in flavors:
             self.assertTrue(flavor.has_key('name'))

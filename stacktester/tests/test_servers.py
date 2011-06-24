@@ -101,6 +101,7 @@ class ServersTest(unittest.TestCase):
             'POST', '/servers', body=post_body)
 
         data = json.loads(body)
+
         server_id = data['server']['id']
         self.assertEqual('202', response['status'])
         self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
@@ -131,7 +132,7 @@ class ServersTest(unittest.TestCase):
         # Create Server
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
-        
+
         self.assertEqual(resp['status'], '202')
         data = json.loads(body)
         serverid = data['server']['id']
@@ -157,7 +158,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(resp['status'], '202')
         data = json.loads(body)
         self.assertEqual(data['server']['name'], 'updatedtestserver')
-        
+
     def test_create_server_invalid_image(self):
         """
         Verify that creating a server with an unknown image ref will fail

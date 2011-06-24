@@ -11,7 +11,7 @@ class NovaConfig(object):
     def get(self, item_name, default_value):
         try:
             return self.conf.get("nova", item_name)
-        except ConfigParser.NoSectionError:
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             return default_value
 
     @property
@@ -38,6 +38,16 @@ class NovaConfig(object):
     def api_key(self):
         """API key to use when authenticating. Defaults to 'admin_key'."""
         return self.get("api_key", "admin_key")
+
+    @property
+    def ssh_username(self):
+        """Username to use when SSHing to Nova API node. Defaults to 'root'."""
+        return self.get("ssh_username", "root")
+
+    @property
+    def ssh_port(self):
+        """Port to use for SSHing to Nova API node. Defaults to 22."""
+        return int(self.get("ssh_port", 22))
 
 
 class GlanceConfig(object):
