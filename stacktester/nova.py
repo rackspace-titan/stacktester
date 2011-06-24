@@ -80,15 +80,17 @@ class API(stacktester.common.http.Client):
 class AdminClient(object):
     """Administrative client for remotely managing Nova installations."""
 
-    def __init__(self, host, ssh_username):
+    def __init__(self, host, ssh_port, ssh_username):
         """Initialize an admin client.
 
         :param host: The hostname/IP of a Nova node with nova-manage installed.
+        :param ssh_port: The ssh port of a Nova node with nova-manage installed.
         :param ssh_username: The username to use via SSH to execute commands.
         :returns: None
 
         """
         self.host = host
+        self.ssh_port = ssh_port
         self.ssh_username = ssh_username
         self._ssh = self._connect()
 
@@ -97,7 +99,8 @@ class AdminClient(object):
         self._set_paramiko_logging()
         client = paramiko.SSHClient()
         client.load_system_host_keys()
-        client.connect(self.host, username=self.ssh_username)
+        client.connect(self.host, port=self.ssh_port,
+                       username=self.ssh_username)
         return client
 
     def _set_paramiko_logging(self):
