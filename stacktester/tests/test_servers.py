@@ -125,7 +125,7 @@ class ServersTest(unittest.TestCase):
             'server' : {
                 'name' : 'testserver',
                 'imageRef' : 3,
-                'flavorRef' : 1,
+                'flavorRef' : 1
             }
         })
 

@@ -13,38 +13,86 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-#from domainobjects import openstack
-#from domainobjects import servers
-#import utils
-#
-#
-#class ServerMetaTest(utils.TestCase):
-#
-#    def setUp(self):
-#        self.os = openstack.OpenStack()
-#        self.server = self.os.servers.create(name="testserver",
-#                                image="http://glance1:9292/v1/images/3",
-#                                flavor="http://172.19.0.3:8774/v1.1/flavors/3",
-#                                meta={'testKey': 'testData'})
-#        self.server.waitForStatus('ACTIVE')
-#
-#    def tearDown(self):
-#        self.server.delete()
-#
-#    def test_get_servers_metdata(self):
-#        """
-#        Test that we can retrieve metadata for a server.
-#        """
-#
-#        # Get a pristine server object
-#        s = self.os.servers.get(self.server)
-#
-#        # Verify that it has the value we expect
-#        self.assertEqual(s.metadata['testKey'], 'testData')
-#
-#    def test_create_delete_metadata(self):
-#        pass
-#
-#    def test_update_metadata(self):
-#        pass
-#
+import stacktester
+from stacktester import exceptions
+from stacktester import openstack
+
+import json
+import unittest2 as unittest
+
+SERVER_FIXTURES = [
+    {
+        'server' : {
+            'name' : 'testserver',
+            'imageRef' : 3,
+            'flavorRef' : 1,
+        }
+    },
+]
+
+IMAGE_FIXTURES = [
+    {
+        'name': 'ramdisk',
+        'disk_format': 'ari',
+        'container_format': 'ari',
+        'is_public': True,
+    },
+    {
+        'name': 'kernel',
+        'disk_format': 'aki',
+        'container_format': 'aki',
+        'is_public': True,
+    },
+    {
+        'name': 'image',
+        'disk_format': 'ami',
+        'container_format': 'ami',
+        'is_public': True,
+    },
+]
+
+
+class ServersMetadataTest(unittest.TestCase):
+
+    def setUp(self):
+        self.os = openstack.Manager()
+        self.config = stacktester.config.StackConfig()
+
+        self.images = {}
+        for IMAGE_FIXTURE in IMAGE_FIXTURES:
+            IMAGE_FIXTURE['location'] = self.config.glance.get(
+                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
+            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
+            self.images[meta['name']] = {'id': meta['id']}
+
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : 3,
+                'flavorRef' : 1,
+                'metadata' : {
+                    'testEntry' : 'testValue'
+                }
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+        
+        data = json.loads(body)
+
+        self.server_id = data['server']['id']
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+
+
+    def tearDown(self):
+        for image in self.images.itervalues():
+            self.os.glance.delete_image(image['id'])
+        self.os.nova.request('DELETE', '/servers/%s' % self.server_id)
+
+    def test_get_servers_metdata(self):
+        """Test that we can retrieve metadata for a server"""
+
+        response, body = self.os.nova.request('GET', '/servers/%s/meta' % self.server_id)
+        result = json.loads(body)['metadata']        
+        self.assertEqual(result['testEntry'], 'testValue')
