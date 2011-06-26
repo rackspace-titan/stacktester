@@ -72,18 +72,6 @@ class ServersTest(unittest.TestCase):
         for image in self.images.itervalues():
             self.os.glance.delete_image(image['id'])
 
-    #def test_list_servers(self):
-        #"""
-        #Verify that a new server is returned in the list of
-        #servers for the user
-        #"""
-        #serverList = self.os.servers.list()
-        #found = False
-        #for s in serverList:
-            #if s.name == 'testserver':
-                #found = True
-        #assert found
-
     def test_create_delete_server(self):
         """
         Verify that a server instance can be created and deleted
@@ -104,7 +92,7 @@ class ServersTest(unittest.TestCase):
 
         server_id = data['server']['id']
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 

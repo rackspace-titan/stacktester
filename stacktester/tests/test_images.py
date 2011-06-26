@@ -128,3 +128,33 @@ class ImagesTest(unittest.TestCase):
                 result = json.loads(body)
                 self.assertEqual(result, {'meta': {meta_key: meta_value}})
 
+    def test_create_server_image(self):
+        """Verify an image can be created from an existing server"""
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : 3,
+                'flavorRef' : 1
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+        data = json.loads(body)
+        server_id = data['server']['id']
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+
+        post_body = json.dumps({
+            'image' : {
+                'name' : 'backup',
+                'server' : {
+                    'serverRef' : server_id                
+                }
+            }
+        })
+        response, body = self.os.nova.request(
+            'POST', '/images', body=post_body)
+        print body
+        self.assertEqual(response['status'], '202')
+        self.os.nova.request('DELETE', '/servers/%s' % server_id)
+

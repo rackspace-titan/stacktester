@@ -58,13 +58,6 @@ class ServersTest(unittest.TestCase):
         self.os = openstack.Manager()
         self.config = stacktester.config.StackConfig()
 
-        self.images = {}
-        for IMAGE_FIXTURE in IMAGE_FIXTURES:
-            IMAGE_FIXTURE['location'] = self.config.glance.get(
-                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
-            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
-            self.images[meta['name']] = {'id': meta['id']}
-
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
@@ -81,10 +74,7 @@ class ServersTest(unittest.TestCase):
         self.server_id = data['server']['id']
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
-
     def tearDown(self):
-        for image in self.images.itervalues():
-            self.os.glance.delete_image(image['id'])
         self.os.nova.request('DELETE', '/servers/%s' % self.server_id)
 
     def test_soft_reboot_server(self):

@@ -30,40 +30,11 @@ SERVER_FIXTURES = [
     },
 ]
 
-IMAGE_FIXTURES = [
-    {
-        'name': 'ramdisk',
-        'disk_format': 'ari',
-        'container_format': 'ari',
-        'is_public': True,
-    },
-    {
-        'name': 'kernel',
-        'disk_format': 'aki',
-        'container_format': 'aki',
-        'is_public': True,
-    },
-    {
-        'name': 'image',
-        'disk_format': 'ami',
-        'container_format': 'ami',
-        'is_public': True,
-    },
-]
-
-
 class ServersMetadataTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
         self.config = stacktester.config.StackConfig()
-
-        self.images = {}
-        for IMAGE_FIXTURE in IMAGE_FIXTURES:
-            IMAGE_FIXTURE['location'] = self.config.glance.get(
-                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
-            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
-            self.images[meta['name']] = {'id': meta['id']}
 
         post_body = json.dumps({
             'server' : {
@@ -86,8 +57,6 @@ class ServersMetadataTest(unittest.TestCase):
 
 
     def tearDown(self):
-        for image in self.images.itervalues():
-            self.os.glance.delete_image(image['id'])
         self.os.nova.request('DELETE', '/servers/%s' % self.server_id)
 
     def test_get_servers_metdata(self):
@@ -96,3 +65,45 @@ class ServersMetadataTest(unittest.TestCase):
         response, body = self.os.nova.request('GET', '/servers/%s/meta' % self.server_id)
         result = json.loads(body)['metadata']        
         self.assertEqual(result['testEntry'], 'testValue')
+
+    def test_add_server_metadata(self):
+        """Verify that key/value pairs can be added to a server's metadata"""
+
+        put_body = json.dumps({
+            'metadata' : {
+                'server label' : 'Web1',
+                'version' : '11.0'
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'PUT', '/servers/%s/meta' % self.server_id, body=put_body)
+        
+        self.assertEqual('201', response['status'])
+        result = json.loads(body)['metadata']
+        self.assertEqual(result['server label'], 'Web1')
+        self.assertEqual(result['version'], '11.0')
+        if 'testEntry' in result: self.fail('This entry should be overwritten.')
+
+    def test_update_server_metadata(self):
+        """Verify that the metadata for a server can be updated"""
+    
+        post_body = json.dumps({
+            'metadata' : {
+                'key' : 'old'
+            }
+        })
+        response, body = self.os.nova.request(
+            'POST', '/servers/%s/meta' % self.server_id, body=post_body)
+        self.assertEqual('201', response['status'])
+        
+        post_body = json.dumps({
+            'metadata' : {
+                'key' : 'new'
+            }
+        })
+        response, body = self.os.nova.request(
+            'POST', '/servers/%s/meta' % self.server_id, body=post_body)
+        self.assertEqual('201', response['status'])
+        result = json.loads(body)['metadata']        
+        self.assertEqual(result['key'], 'new')
