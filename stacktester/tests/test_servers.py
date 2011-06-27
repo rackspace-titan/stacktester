@@ -20,69 +20,11 @@ from stacktester import openstack
 import json
 import unittest2 as unittest
 
-
-SERVER_FIXTURES = [
-    {
-        'server' : {
-            'name' : 'testserver',
-            'imageRef' : 3,
-            'flavorRef' : 1,
-        }
-    },
-]
-
-IMAGE_FIXTURES = [
-    {
-        'name': 'ramdisk',
-        'disk_format': 'ari',
-        'container_format': 'ari',
-        'is_public': True,
-    },
-    {
-        'name': 'kernel',
-        'disk_format': 'aki',
-        'container_format': 'aki',
-        'is_public': True,
-    },
-    {
-        'name': 'image',
-        'disk_format': 'ami',
-        'container_format': 'ami',
-        'is_public': True,
-    },
-]
-
-
 class ServersTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
         self.config = stacktester.config.StackConfig()
-
-        self.images = {}
-        for IMAGE_FIXTURE in IMAGE_FIXTURES:
-            IMAGE_FIXTURE['location'] = self.config.glance.get(
-                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
-            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
-            self.images[meta['name']] = {'id': meta['id']}
-
-
-
-    def tearDown(self):
-        for image in self.images.itervalues():
-            self.os.glance.delete_image(image['id'])
-
-    #def test_list_servers(self):
-        #"""
-        #Verify that a new server is returned in the list of
-        #servers for the user
-        #"""
-        #serverList = self.os.servers.list()
-        #found = False
-        #for s in serverList:
-            #if s.name == 'testserver':
-                #found = True
-        #assert found
 
     def test_create_delete_server(self):
         """
@@ -104,7 +46,7 @@ class ServersTest(unittest.TestCase):
 
         server_id = data['server']['id']
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 

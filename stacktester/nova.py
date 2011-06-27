@@ -61,6 +61,25 @@ class API(stacktester.common.http.Client):
             '/servers/%s' % server_id,
             check_response,
             **kwargs)
+    
+    #TODO Consider genericizing so servers/images share common code
+    def wait_for_image_status(self, image_id, status='ACTIVE', **kwargs):
+        """Wait for the image status to be equal to the status passed in.
+
+        :param image_id: Image ID to query.
+        :param status: The status string to look for.
+        :returns: None
+
+        """
+        def check_response(resp, body):
+            data = json.loads(body)
+            return data['image']['status'] == status
+
+        self.poll_request(
+            'GET',
+            '/images/%s' % image_id,
+            check_response,
+            **kwargs)
 
     def request(self, method, url, **kwargs):
         """Generic HTTP request on the Nova API.
