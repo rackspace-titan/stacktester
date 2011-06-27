@@ -135,7 +135,7 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertEqual(resp['status'], '202')
+        self.assertEqual('202', resp['status'])
         data = json.loads(body)
         serverid = data['server']['id']
         self.assertTrue(data['server']['name'], 'testserver')
@@ -157,7 +157,7 @@ class ServersTest(unittest.TestCase):
         # Get Server information
         resp, body = self.os.nova.request('GET', '/servers/%s' % serverid)
 
-        self.assertEqual(resp['status'], '202')
+        self.assertEqual('202', resp['status'])
         data = json.loads(body)
         self.assertEqual(data['server']['name'], 'updatedtestserver')
 
