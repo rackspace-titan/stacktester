@@ -20,38 +20,6 @@ from stacktester import openstack
 import json
 import unittest2 as unittest
 
-SERVER_FIXTURES = [
-    {
-        'server' : {
-            'name' : 'testserver',
-            'imageRef' : 3,
-            'flavorRef' : 1,
-        }
-    },
-]
-
-IMAGE_FIXTURES = [
-    {
-        'name': 'ramdisk',
-        'disk_format': 'ari',
-        'container_format': 'ari',
-        'is_public': True,
-    },
-    {
-        'name': 'kernel',
-        'disk_format': 'aki',
-        'container_format': 'aki',
-        'is_public': True,
-    },
-    {
-        'name': 'image',
-        'disk_format': 'ami',
-        'container_format': 'ami',
-        'is_public': True,
-    },
-]
-
-
 class ServersTest(unittest.TestCase):
 
     def setUp(self):

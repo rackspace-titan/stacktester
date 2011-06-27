@@ -20,16 +20,6 @@ from stacktester import openstack
 import json
 import unittest2 as unittest
 
-SERVER_FIXTURES = [
-    {
-        'server' : {
-            'name' : 'testserver',
-            'imageRef' : 3,
-            'flavorRef' : 1,
-        }
-    },
-]
-
 class ServersMetadataTest(unittest.TestCase):
 
     def setUp(self):
