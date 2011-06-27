@@ -74,17 +74,15 @@ class ServersTest(unittest.TestCase):
         for image in self.images.itervalues():
             self.os.glance.delete_image(image['id'])
 
-    #def test_list_servers(self):
-        #"""
-        #Verify that a new server is returned in the list of
-        #servers for the user
-        #"""
-        #serverList = self.os.servers.list()
-        #found = False
-        #for s in serverList:
-            #if s.name == 'testserver':
-                #found = True
-        #assert found
+    def test_list_empty_servers(self):
+        """
+        Verify that empty servers list works properly
+        """
+
+        response, body = self.os.nova.request('GET', '/servers')
+        self.assertEqual(200, response.status)
+        print body
+        self.assertTrue(False)
 
     def test_create_delete_server(self):
         """
@@ -104,7 +102,7 @@ class ServersTest(unittest.TestCase):
 
         data = json.loads(body)
 
-        self.assertEqual('202', response['status'])
+        self.assertEqual(202, response.status)
         server_id = data['server']['id']
         self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
 
@@ -135,7 +133,7 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertEqual('202', resp['status'])
+        self.assertEqual(202, resp.status)
         data = json.loads(body)
         serverid = data['server']['id']
         self.assertTrue('testserver', data['server']['name'])
@@ -152,12 +150,12 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'PUT', '/servers/%s' % serverid, body=put_body)
 
-        self.assertEqual('204', resp['status'])
+        self.assertEqual(204, resp.status)
 
         # Get Server information
         resp, body = self.os.nova.request('GET', '/servers/%s' % serverid)
 
-        self.assertEqual('202', resp['status'])
+        self.assertEqual(202, resp.status)
         data = json.loads(body)
         self.assertEqual('updatedtestserver', data['server']['name'])
 
@@ -177,7 +175,7 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertTrue('400', resp['status'])
+        self.assertTrue(400, resp.status)
 
     def test_create_server_invalid_flavor(self):
         """
@@ -195,4 +193,4 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertTrue('400', resp['status'])
+        self.assertTrue(400, resp.status)
