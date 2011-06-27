@@ -13,38 +13,87 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-#from domainobjects import openstack
-#from domainobjects import servers
-#import utils
+import stacktester
+from stacktester import exceptions
+from stacktester import openstack
+
+import json
+import unittest2 as unittest
+
+class ServersMetadataTest(unittest.TestCase):
+
+    def setUp(self):
+        self.os = openstack.Manager()
+        self.config = stacktester.config.StackConfig()
+
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : 3,
+                'flavorRef' : 1,
+                'metadata' : {
+                    'testEntry' : 'testValue'
+                }
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+        
+        data = json.loads(body)
+
+        self.server_id = data['server']['id']
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+
+
+    def tearDown(self):
+        self.os.nova.request('DELETE', '/servers/%s' % self.server_id)
+
+    def test_get_servers_metdata(self):
+        """Test that we can retrieve metadata for a server"""
+
+        response, body = self.os.nova.request('GET', '/servers/%s/meta' % self.server_id)
+        result = json.loads(body)['metadata']        
+        self.assertEqual(result['testEntry'], 'testValue')
+
+#    def test_add_server_metadata(self):
+#        """Verify that key/value pairs can be added to a server's metadata"""
 #
+#        put_body = json.dumps({
+#            'metadata' : {
+#                'server label' : 'Web1',
+#                'version' : '11.0'
+#            }
+#        })
 #
-#class ServerMetaTest(utils.TestCase):
+#        response, body = self.os.nova.request(
+#            'PUT', '/servers/%s/meta' % self.server_id, body=put_body)
+#        
+#        #self.assertEqual('201', response['status'])       
+#        result = json.loads(body)['metadata']
+#        self.assertEqual(result['server label'], 'Web1')
+#        self.assertEqual(result['version'], '11.0')
+#        if 'testEntry' in result: self.fail('This entry should be overwritten.')
 #
-#    def setUp(self):
-#        self.os = openstack.OpenStack()
-#        self.server = self.os.servers.create(name="testserver",
-#                                image="http://glance1:9292/v1/images/3",
-#                                flavor="http://172.19.0.3:8774/v1.1/flavors/3",
-#                                meta={'testKey': 'testData'})
-#        self.server.waitForStatus('ACTIVE')
-#
-#    def tearDown(self):
-#        self.server.delete()
-#
-#    def test_get_servers_metdata(self):
-#        """
-#        Test that we can retrieve metadata for a server.
-#        """
-#
-#        # Get a pristine server object
-#        s = self.os.servers.get(self.server)
-#
-#        # Verify that it has the value we expect
-#        self.assertEqual(s.metadata['testKey'], 'testData')
-#
-#    def test_create_delete_metadata(self):
-#        pass
-#
-#    def test_update_metadata(self):
-#        pass
-#
+#    def test_update_server_metadata(self):
+#        """Verify that the metadata for a server can be updated"""
+#    
+#        post_body = json.dumps({
+#            'metadata' : {
+#                'key' : 'old'
+#            }
+#        })
+#        response, body = self.os.nova.request(
+#            'POST', '/servers/%s/meta' % self.server_id, body=post_body)
+#        self.assertEqual('201', response['status'])
+#        
+#        post_body = json.dumps({
+#            'metadata' : {
+#                'key' : 'new'
+#            }
+#        })
+#        response, body = self.os.nova.request(
+#            'POST', '/servers/%s/meta' % self.server_id, body=post_body)
+#        self.assertEqual('201', response['status'])
+#        result = json.loads(body)['metadata']        
+#        self.assertEqual(result['key'], 'new')

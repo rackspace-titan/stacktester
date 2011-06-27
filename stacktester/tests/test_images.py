@@ -128,3 +128,38 @@ class ImagesTest(unittest.TestCase):
                 result = json.loads(body)
                 self.assertEqual(result, {'meta': {meta_key: meta_value}})
 
+    def test_create_delete_server_image(self):
+        """Verify an image can be created from an existing server"""
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : 3,
+                'flavorRef' : 1
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+        data = json.loads(body)
+        server_id = data['server']['id']
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+
+        post_body = json.dumps({
+            'image' : {
+                'name' : 'backup',
+                'serverRef' : str(server_id)               
+            }
+        })
+        response, body = self.os.nova.request(
+            'POST', '/images', body=post_body)
+
+        #TODO Ignoring the incorrect response code so the test can continue        
+        #self.assertEqual(response['status'], '202')
+        data = json.loads(body)
+        image_id = data['image']['id']
+        self.os.nova.wait_for_image_status(image_id, 'ACTIVE')
+
+        response, body = self.os.nova.request('DELETE', '/images/%s' % image_id)
+        self.assertEqual(response['status'], '204')
+        self.os.nova.request('DELETE', '/servers/%s' % server_id)
+

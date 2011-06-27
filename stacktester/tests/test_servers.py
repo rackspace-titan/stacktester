@@ -20,7 +20,7 @@ from stacktester import openstack
 import json
 import unittest2 as unittest
 
-
+ 
 SERVER_FIXTURES = [
     {
         'server' : {
@@ -104,7 +104,8 @@ class ServersTest(unittest.TestCase):
 
         self.assertEqual(202, response.status)
         server_id = data['server']['id']
-        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
+        self.assertEqual('202', response['status'])
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 
