@@ -21,16 +21,6 @@ import json
 import unittest2 as unittest
 
  
-SERVER_FIXTURES = [
-    {
-        'server' : {
-            'name' : 'testserver',
-            'imageRef' : 3,
-            'flavorRef' : 1,
-        }
-    },
-]
-
 IMAGE_FIXTURES = [
     {
         'name': 'ramdisk',
@@ -81,8 +71,8 @@ class ServersTest(unittest.TestCase):
 
         response, body = self.os.nova.request('GET', '/servers')
         self.assertEqual(200, response.status)
-        print body
-        self.assertTrue(False)
+        data = json.loads(body)
+        self.assertTrue(not data['servers'])
 
     def test_create_delete_server(self):
         """
