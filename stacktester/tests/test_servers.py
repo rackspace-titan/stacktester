@@ -169,7 +169,7 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 302,
+                'imageRef' : -3,
                 'flavorRef' : 1,
             }
         })
@@ -179,11 +179,20 @@ class ServersTest(unittest.TestCase):
 
         self.assertTrue(resp['status'], '400')
 
-    #def test_create_server_invalid_flavor(self):
-        #"""
-        #Verify that creating a server with an unknown image ref will fail
-        #"""
+    def test_create_server_invalid_flavor(self):
+        """
+        Verify that creating a server with an unknown image ref will fail
+        """
 
-        #newServer = self.os.servers.create(name="testserver2",
-        #image="http://glance1:9292/v1/images/1",
-        #flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : self.images['image']['id'],
+                'flavorRef' : -1,
+            }
+        })
+
+        resp, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+
+        self.assertTrue(resp['status'], '400')
