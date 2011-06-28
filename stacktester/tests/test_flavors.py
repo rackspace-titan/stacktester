@@ -1,15 +1,8 @@
-
-
-from stacktester import openstack
-
 import json
+
 import unittest2 as unittest
 
-#TODO: only for optional setup
-FIXTURES = [
-    {"flavorid": 1, "name": "m1.tiny", "ram": 512, "vcpus": 1, "disk": 0},
-    {"flavorid": 2, "name": "m1.small", "ram": 2048, "vcpus": 1, "disk": 20},
-]
+from stacktester import openstack
 
 
 class FlavorsTest(unittest.TestCase):
