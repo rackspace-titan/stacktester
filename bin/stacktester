@@ -67,7 +67,7 @@ def report_known_issues(known_issues):
     elif known_issues == 1:
         print "There was 1 known issue skipped."
     else:
-        print "There were %d known issues skipped."
+        print "There were %d known issues skipped." % known_issues
 
 
 if __name__ == "__main__":
