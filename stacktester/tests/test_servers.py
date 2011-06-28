@@ -21,8 +21,11 @@ from stacktester import openstack
 
 class ServersTest(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.os = openstack.Manager()
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
     def test_create_delete_server(self):
         """
@@ -32,19 +35,19 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
-        response, body = self.os.nova.request(
+        resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
         data = json.loads(body)
-
         server_id = data['server']['id']
+
         # KNOWN-ISSUE lp796742
-        #self.assertEqual('202', response['status'])
+        #self.assertEqual(202, resp.status)
         self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
@@ -65,8 +68,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -75,13 +78,14 @@ class ServersTest(unittest.TestCase):
             'POST', '/servers', body=post_body)
 
         # KNOWN-ISSUE lp796742
-        #self.assertEqual(resp['status'], '202')
+        #self.assertEqual(202, resp.status)
+
         data = json.loads(body)
-        serverid = data['server']['id']
-        self.assertTrue(data['server']['name'], 'testserver')
+        self.assertTrue('testserver', data['server']['name'])
+        server_id = data['server']['id']
 
         # Wait for it to be created
-        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         # Update name
         put_body = json.dumps({
@@ -90,16 +94,16 @@ class ServersTest(unittest.TestCase):
             }
         })
         resp, body = self.os.nova.request(
-            'PUT', '/servers/%s' % serverid, body=put_body)
+            'PUT', '/servers/%s' % server_id, body=put_body)
 
-        self.assertEqual(resp['status'], '204')
+        self.assertEqual(204, resp.status)
 
         # Get Server information
-        resp, body = self.os.nova.request('GET', '/servers/%s' % serverid)
+        resp, body = self.os.nova.request('GET', '/servers/%s' % server_id)
 
-        self.assertEqual(resp['status'], '200')
+        self.assertEqual(200, resp.status)
         data = json.loads(body)
-        self.assertEqual(data['server']['name'], 'updatedtestserver')
+        self.assertEqual('updatedtestserver', data['server']['name'])
 
     def test_create_server_invalid_image(self):
         """
@@ -109,12 +113,30 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 302,
-                'flavorRef' : 1,
+                'imageRef' : -1,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertTrue(resp['status'], '400')
+        self.assertTrue(400, resp.status)
+
+    def test_create_server_invalid_flavor(self):
+        """
+        Verify that creating a server with an unknown image ref will fail
+        """
+
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : self.image_ref,
+                'flavorRef' : -1,
+            }
+        })
+
+        resp, body = self.os.nova.request(
+            'POST', '/servers', body=post_body)
+
+        self.assertTrue(400, resp.status)

@@ -9,6 +9,15 @@ class ImagesTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
+        self.images = {}
+
+        resp, body = self.os.nova.request(
+            'GET', '/images/%s' % self.os.config.env.image_ref)
+        data = json.loads(body)
+        self.images[str(data['image']['id'])] = data
+
+    def tearDown(self):
+        pass
 
     def _assert_image_basic(self, image, expected):
         self.assertEqual(expected['id'], image['id'])
@@ -43,8 +52,8 @@ class ImagesTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1
+                'imageRef' : self.os.config.env.image_ref,
+                'flavorRef' : self.os.config.env.flavor_ref
             }
         })
 
@@ -63,7 +72,7 @@ class ImagesTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/images', body=post_body)
 
-        #TODO Ignoring the incorrect response code so the test can continue
+        # KNOWN-ISSUE incorrect response code
         #self.assertEqual(response['status'], '202')
 
         data = json.loads(body)
