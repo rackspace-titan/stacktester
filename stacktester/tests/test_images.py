@@ -12,9 +12,9 @@ class ImagesTest(unittest.TestCase):
         self.images = {}
         
         resp, body = self.os.nova.request(
-            'GET', '/images/%s' % self.os.config.env.get('image_ref'))
+            'GET', '/images/%s' % self.os.config.env.image_ref)
         data = json.loads(body)
-        self.images[str(data['id'])] = data
+        self.images[str(data['image']['id'])] = data
 
     def tearDown(self):
         pass
@@ -52,8 +52,8 @@ class ImagesTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.os.config.env.get('image_ref'),
-                'flavorRef' : self.os.config.env.get('flavor_ref') 
+                'imageRef' : self.os.config.env.image_ref,
+                'flavorRef' : self.os.config.env.flavor_ref
             }
         })
 

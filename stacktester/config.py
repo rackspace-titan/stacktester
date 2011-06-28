@@ -51,12 +51,12 @@ class EnvironmentConfig(object):
             return default_value
 
     @property
-    def imageRef(self):
+    def image_ref(self):
         """ valid imageRef to use """
         return self.get("image_ref", 3);
 
     @property
-    def flavorRef(self):
+    def flavor_ref(self):
         """ valid flavorRef to use """
         return self.get("flavor_ref", 1);
 
