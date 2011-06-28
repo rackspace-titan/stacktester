@@ -23,9 +23,8 @@ class ServersTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-        self.config = stacktester.config.StackConfig()
-        self.image_ref = self.os.config.env.get('image_ref')
-        self.flavor_ref = self.os.config.env.get('flavor_ref')
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
     def test_create_delete_server(self):
         """
