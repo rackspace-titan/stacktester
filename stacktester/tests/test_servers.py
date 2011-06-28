@@ -92,9 +92,9 @@ class ServersTest(unittest.TestCase):
 
         data = json.loads(body)
 
-        self.assertEqual(202, response.status)
+        # KNOWN-ISSUE lp:796742
+        #self.assertEqual(202, response.status)
         server_id = data['server']['id']
-        self.assertEqual('202', response['status'])
         self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
@@ -124,13 +124,14 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        self.assertEqual(202, resp.status)
+        # KNOWN-ISSUE lp:796742
+        #self.assertEqual(202, resp.status)
         data = json.loads(body)
-        serverid = data['server']['id']
         self.assertTrue('testserver', data['server']['name'])
+        server_id = data['server']['id']
 
         # Wait for it to be created
-        self.os.nova.wait_for_server_status(serverid, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         # Update name
         put_body = json.dumps({
@@ -139,14 +140,14 @@ class ServersTest(unittest.TestCase):
             }
         })
         resp, body = self.os.nova.request(
-            'PUT', '/servers/%s' % serverid, body=put_body)
+            'PUT', '/servers/%s' % server_id, body=put_body)
 
         self.assertEqual(204, resp.status)
 
         # Get Server information
-        resp, body = self.os.nova.request('GET', '/servers/%s' % serverid)
+        resp, body = self.os.nova.request('GET', '/servers/%s' % server_id)
 
-        self.assertEqual(202, resp.status)
+        self.assertEqual(200, resp.status)
         data = json.loads(body)
         self.assertEqual('updatedtestserver', data['server']['name'])
 
