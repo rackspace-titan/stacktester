@@ -6,6 +6,7 @@ import sys
 import nose
 
 import stacktester.config
+import stacktester.issues
 
 
 def main():
@@ -17,9 +18,12 @@ def main():
         nose_argv.append("-v")
 
     nose_argv.extend(args)
-    nose.main(module="stacktester", 
-              argv=nose_argv, 
-              defaultTest="stacktester.tests")
+    status = run_nose_without_exiting(module="stacktester",
+                                      argv=nose_argv,
+                                      defaultTest="stacktester.tests")
+
+    report_known_issues_in_tests(stacktester.tests)
+    sys.exit(status)
 
 
 def parse_options():
@@ -36,6 +40,34 @@ def parse_options():
                       action="store_true",
                       help="Toggle verbose output.")
     return parser.parse_args()
+
+
+def run_nose_without_exiting(*args, **kwargs):
+    exit_status = None
+
+    def save_exit_status(status):
+        exit_status = status
+
+    tmp_exit = sys.exit
+    sys.exit = save_exit_status
+    nose.main(*args, **kwargs)
+    sys.exit = tmp_exit
+    return exit_status
+
+
+def report_known_issues_in_tests(module):
+    finder = stacktester.issues.KnownIssuesFinder()
+    finder.find_known_issues(module)
+    report_known_issues(finder.count)
+
+
+def report_known_issues(known_issues):
+    if known_issues == 0:
+        print "There were no known issues skipped."
+    elif known_issues == 1:
+        print "There was 1 known issue skipped."
+    else:
+        print "There were %d known issues skipped."
 
 
 if __name__ == "__main__":
