@@ -21,12 +21,11 @@ import unittest2 as unittest
 
 class ServerActionsTest(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.os = openstack.Manager()
-        self.config = stacktester.config.StackConfig()
-        #TODO get values from config
-        self.image_ref = 3
-        self.flavor_ref = 1
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
         post_body = json.dumps({
             'server' : {
@@ -46,7 +45,8 @@ class ServerActionsTest(unittest.TestCase):
         self.server_id = data['server']['id']
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
-    def tearDown(self):
+    @classmethod
+    def tearDownClass(self):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
