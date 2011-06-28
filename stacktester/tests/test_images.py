@@ -51,7 +51,6 @@ class ImagesTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
         data = json.loads(body)
-        print data
         server_id = data['server']['id']
         self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 

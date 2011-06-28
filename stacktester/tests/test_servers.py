@@ -41,7 +41,6 @@ class ServersTest(unittest.TestCase):
             'POST', '/servers', body=post_body)
 
         data = json.loads(body)
-        print data
 
         server_id = data['server']['id']
         self.assertEqual('202', response['status'])

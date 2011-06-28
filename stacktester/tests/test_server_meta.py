@@ -39,7 +39,6 @@ class ServersMetadataTest(unittest.TestCase):
             'POST', '/servers', body=post_body)
 
         data = json.loads(body)
-        print data
 
         self.server_id = data['server']['id']
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
