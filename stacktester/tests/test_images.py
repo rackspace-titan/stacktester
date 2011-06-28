@@ -10,7 +10,7 @@ class ImagesTest(unittest.TestCase):
     def setUp(self):
         self.os = openstack.Manager()
         self.images = {}
-        
+
         resp, body = self.os.nova.request(
             'GET', '/images/%s' % self.os.config.env.image_ref)
         data = json.loads(body)
