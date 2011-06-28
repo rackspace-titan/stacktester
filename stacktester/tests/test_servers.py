@@ -12,19 +12,17 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import json
 
-import stacktester
-from stacktester import exceptions
+import unittest2 as unittest
+
 from stacktester import openstack
 
-import json
-import unittest2 as unittest
 
 class ServersTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-        self.config = stacktester.config.StackConfig()
 
     def test_create_delete_server(self):
         """
@@ -118,12 +116,3 @@ class ServersTest(unittest.TestCase):
             'POST', '/servers', body=post_body)
 
         self.assertTrue(resp['status'], '400')
-
-    #def test_create_server_invalid_flavor(self):
-        #"""
-        #Verify that creating a server with an unknown image ref will fail
-        #"""
-
-        #newServer = self.os.servers.create(name="testserver2",
-        #image="http://glance1:9292/v1/images/1",
-        #flavor="http://172.19.0.3:8774/v1.1/flavors/99999999")
