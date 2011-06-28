@@ -12,57 +12,20 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
-
-import stacktester
-from stacktester import exceptions
-from stacktester import openstack
-
 import json
+
 import unittest2 as unittest
 
- 
-IMAGE_FIXTURES = [
-    {
-        'name': 'ramdisk',
-        'disk_format': 'ari',
-        'container_format': 'ari',
-        'is_public': True,
-    },
-    {
-        'name': 'kernel',
-        'disk_format': 'aki',
-        'container_format': 'aki',
-        'is_public': True,
-    },
-    {
-        'name': 'image',
-        'disk_format': 'ami',
-        'container_format': 'ami',
-        'is_public': True,
-    },
-]
+from stacktester import openstack
 
 
 class ServersTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-        self.os = openstack.Manager()
-        self.config = stacktester.config.StackConfig()
-
-        self.images = {}
-        for IMAGE_FIXTURE in IMAGE_FIXTURES:
-            IMAGE_FIXTURE['location'] = self.config.glance.get(
-                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
-
-            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
-            self.images[meta['name']] = {'id': meta['id']}
-
-
-    @classmethod
-    def tearDownClass(self):
-        for image in self.images.itervalues():
-            self.os.glance.delete_image(image['id'])
+       self.os = openstack.Manager()
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
     def test_list_empty_servers(self):
         """
@@ -82,8 +45,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.images['image']['id'],
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -95,6 +58,9 @@ class ServersTest(unittest.TestCase):
         # KNOWN-ISSUE lp:796742
         #self.assertEqual(202, response.status)
         server_id = data['server']['id']
+
+        # KNOWN-ISSUE lp796742
+        #self.assertEqual('202', response['status'])
         self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
@@ -115,8 +81,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.images['image']['id'],
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -126,6 +92,7 @@ class ServersTest(unittest.TestCase):
 
         # KNOWN-ISSUE lp:796742
         #self.assertEqual(202, resp.status)
+
         data = json.loads(body)
         self.assertTrue('testserver', data['server']['name'])
         server_id = data['server']['id']
@@ -159,8 +126,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : -3,
-                'flavorRef' : 1,
+                'imageRef' : -1,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -177,7 +144,7 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.images['image']['id'],
+                'imageRef' : self.image_ref,
                 'flavorRef' : -1,
             }
         })
