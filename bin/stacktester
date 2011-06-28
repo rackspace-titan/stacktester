@@ -43,16 +43,10 @@ def parse_options():
 
 
 def run_nose_without_exiting(*args, **kwargs):
-    exit_status = None
-
-    def save_exit_status(status):
-        exit_status = status
-
-    tmp_exit = sys.exit
-    sys.exit = save_exit_status
-    nose.main(*args, **kwargs)
-    sys.exit = tmp_exit
-    return exit_status
+    try:
+        nose.main(*args, **kwargs)
+    except SystemExit, e:
+        return e.code
 
 
 def report_known_issues_in_tests(module):
