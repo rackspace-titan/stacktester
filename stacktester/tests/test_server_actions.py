@@ -19,27 +19,6 @@ from stacktester import openstack
 
 import json
 import unittest2 as unittest
-#
-IMAGE_FIXTURES = [
-    {
-        'name': 'ramdisk',
-        'disk_format': 'ari',
-        'container_format': 'ari',
-        'is_public': True,
-    },
-    {
-        'name': 'kernel',
-        'disk_format': 'aki',
-        'container_format': 'aki',
-        'is_public': True,
-    },
-    {
-        'name': 'image',
-        'disk_format': 'ami',
-        'container_format': 'ami',
-        'is_public': True,
-    },
-]
 
 
 class ServerActionsTest(unittest.TestCase):
@@ -47,24 +26,21 @@ class ServerActionsTest(unittest.TestCase):
     def setUp(self):
         self.os = openstack.Manager()
         self.config = stacktester.config.StackConfig()
-
-        self.images = {}
-        for IMAGE_FIXTURE in IMAGE_FIXTURES:
-            IMAGE_FIXTURE['location'] = self.config.glance.get(
-                '%s_uri' % IMAGE_FIXTURE['disk_format'], 'Invalid')
-            meta = self.os.glance.add_image(IMAGE_FIXTURE, None)
-            self.images[meta['name']] = {'id': meta['id']}
+        #TODO get values from config
+        self.image_ref = 3
+        self.flavor_ref = 1
 
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.images['image']['id'],
-                'flavorRef' : 3,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
         response, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
+        # KNOWN-ISSUE lp802621
         #self.assertEqual('202', response['status'])
 
         data = json.loads(body)
@@ -73,20 +49,18 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
     def tearDown(self):
-        for image in self.images.itervalues():
-            self.os.glance.delete_image(image['id'])
-
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : self.images['image']['id'],
-                'flavorRef' : 3,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
         response, body = self.os.nova.request(
             'DELETE',
             '/servers/%s' % self.server_id,
             body=body)
+        self.assertEqual('204', response['status'])
 
     def test_reboot_server(self):
         """
