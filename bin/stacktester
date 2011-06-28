@@ -23,7 +23,7 @@ def main():
                                       defaultTest="stacktester.tests")
 
     report_known_issues_in_tests(stacktester.tests)
-    sys.exit(status)
+    return status
 
 
 def parse_options():
