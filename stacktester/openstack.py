@@ -7,10 +7,7 @@ class Manager(object):
 
     def __init__(self):
         self.config = stacktester.config.StackConfig()
-        self.nova = self._load_nova()
-
-    def _load_nova(self):
-        return stacktester.nova.API(self.config.nova.host,
+        self.nova = stacktester.nova.API(self.config.nova.host,
                                     self.config.nova.port,
                                     self.config.nova.base_url,
                                     self.config.nova.username,
