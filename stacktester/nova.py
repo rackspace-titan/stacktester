@@ -59,7 +59,7 @@ class API(stacktester.common.http.Client):
             '/servers/%s' % server_id,
             check_response,
             **kwargs)
-    
+
     #TODO Consider genericizing so servers/images share common code
     def wait_for_image_status(self, image_id, status='ACTIVE', **kwargs):
         """Wait for the image status to be equal to the status passed in.

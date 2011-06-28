@@ -1,9 +1,8 @@
+import json
 
+import unittest2 as unittest
 
 from stacktester import openstack
-
-import json
-import unittest2 as unittest
 
 
 class FlavorsTest(unittest.TestCase):

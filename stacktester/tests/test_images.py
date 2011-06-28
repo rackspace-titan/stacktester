@@ -1,8 +1,8 @@
+import json
+
+import unittest2 as unittest
 
 from stacktester import openstack
-
-import json
-import unittest2 as unittest
 
 
 class ImagesTest(unittest.TestCase):
@@ -47,65 +47,6 @@ class ImagesTest(unittest.TestCase):
 
         self._assert_image_metadata(image, expected)
 
-    def test_get_images(self):
-        """Verify the correct list of image entities is returned"""
-        response, body = self.os.nova.request('GET', '/images')
-
-        self.assertEqual(response['status'], '200')
-        result = json.loads(body)['images']
-
-        # expect to only see public images
-        self.assertEqual(len(result), 1)
-
-        for image in result:
-            expected = self.images[str(image['id'])]
-            self._assert_image_basic(image, expected)
-
-    def test_get_images_detailed(self):
-        """Verify the correct list of detailed image entities is returned"""
-        response, body = self.os.nova.request('GET', '/images/detail')
-
-        self.assertEqual(response['status'], '200')
-        result = json.loads(body)['images']
-
-        # expect to only see public images
-        self.assertEqual(len(result), 1)
-
-        for image in result:
-            expected = self.images[str(image['id'])]
-            self._assert_image_detailed(image, expected)
-
-    def test_get_image(self):
-        """Verify the correct entities are returned for each image"""
-        for (image_id, expected) in self.images.items():
-            url = '/images/%s' % (image_id,)
-            response, body = self.os.nova.request('GET', url)
-
-            self.assertEqual(response['status'], '200')
-            result = json.loads(body)['image']
-            self._assert_image_detailed(result, expected)
-
-    def test_get_image_metadata(self):
-        """Verify correct list of metadata entities are returned per image"""
-        for (image_id, expected) in self.images.items():
-            url = '/images/%s/meta' % (image_id,)
-            response, body = self.os.nova.request('GET', url)
-
-            self.assertEqual(response['status'], '200')
-            result = json.loads(body)
-            self._assert_image_metadata(result, expected)
-
-    def test_get_image_metadata_item(self):
-        """Verify the correct metadata entities are returned for each image"""
-        for (image_id, expected) in self.images.items():
-            for (meta_key, meta_value) in expected['properties'].items():
-                url = '/images/%s/meta/%s' % (image_id, meta_key)
-                response, body = self.os.nova.request('GET', url)
-
-                self.assertEqual(response['status'], '200')
-                result = json.loads(body)
-                self.assertEqual(result, {'meta': {meta_key: meta_value}})
-
     def test_create_delete_server_image(self):
         """Verify an image can be created from an existing server"""
         post_body = json.dumps({
@@ -125,7 +66,7 @@ class ImagesTest(unittest.TestCase):
         post_body = json.dumps({
             'image' : {
                 'name' : 'backup',
-                'serverRef' : str(server_id)               
+                'serverRef' : str(server_id)
             }
         })
         response, body = self.os.nova.request(
@@ -133,6 +74,7 @@ class ImagesTest(unittest.TestCase):
 
         # KNOWN-ISSUE incorrect response code
         #self.assertEqual(response['status'], '202')
+
         data = json.loads(body)
         image_id = data['image']['id']
         self.os.nova.wait_for_image_status(image_id, 'ACTIVE')

@@ -1,5 +1,3 @@
-import glance.client
-
 import stacktester.config
 import stacktester.nova
 
