@@ -23,7 +23,7 @@ class ServersTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(self):
-       self.os = openstack.Manager()
+        self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
 
@@ -50,18 +50,14 @@ class ServersTest(unittest.TestCase):
             }
         })
 
-        response, body = self.os.nova.request(
+        resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
         data = json.loads(body)
-
-        # KNOWN-ISSUE lp:796742
-        #self.assertEqual(202, response.status)
         server_id = data['server']['id']
 
         # KNOWN-ISSUE lp796742
-        #self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        #self.assertEqual(202, resp.status) self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 
@@ -90,7 +86,7 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
 
-        # KNOWN-ISSUE lp:796742
+        # KNOWN-ISSUE lp796742
         #self.assertEqual(202, resp.status)
 
         data = json.loads(body)
