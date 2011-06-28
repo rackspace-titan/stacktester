@@ -47,7 +47,8 @@ class ServersTest(unittest.TestCase):
         server_id = data['server']['id']
 
         # KNOWN-ISSUE lp796742
-        #self.assertEqual(202, resp.status) self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        #self.assertEqual(202, resp.status)
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         self.assertEqual('testserver', data['server']['name'])
 
