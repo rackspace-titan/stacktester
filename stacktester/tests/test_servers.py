@@ -27,16 +27,6 @@ class ServersTest(unittest.TestCase):
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
 
-    def test_list_empty_servers(self):
-        """
-        Verify that empty servers list works properly
-        """
-
-        response, body = self.os.nova.request('GET', '/servers')
-        self.assertEqual(200, response.status)
-        data = json.loads(body)
-        self.assertTrue(not data['servers'])
-
     def test_create_delete_server(self):
         """
         Verify that a server instance can be created and deleted
