@@ -2,8 +2,6 @@ import json
 import logging
 import subprocess
 
-import paramiko
-
 import stacktester.common.http
 
 
@@ -94,75 +92,3 @@ class API(stacktester.common.http.Client):
         headers['X-Auth-Token'] = self.authenticate(self.user, self.api_key)
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
-
-
-class AdminClient(object):
-    """Administrative client for remotely managing Nova installations."""
-
-    def __init__(self, host, ssh_port, ssh_username):
-        """Initialize an admin client.
-
-        :param host: The hostname/IP of a Nova node with nova-manage installed.
-        :param ssh_port: The ssh port of a Nova node with nova-manage installed.
-        :param ssh_username: The username to use via SSH to execute commands.
-        :returns: None
-
-        """
-        self.host = host
-        self.ssh_port = ssh_port
-        self.ssh_username = ssh_username
-        self._ssh = self._connect()
-
-    def _connect(self):
-        """Setup the SSH client to connect to the target server."""
-        self._set_paramiko_logging()
-        client = paramiko.SSHClient()
-        client.load_system_host_keys()
-        client.connect(self.host, port=self.ssh_port,
-                       username=self.ssh_username)
-        return client
-
-    def _set_paramiko_logging(self):
-        """Move from DEBUG -> WARN level logging on paramiko."""
-        logger = logging.getLogger("paramiko.transport")
-        logger.setLevel(logging.WARN)
-
-    def _remote_call(self, command):
-        """Perform a command on the remote node.
-
-        :param command: The command to perform, including all options/flags.
-        :returns: True if exit code == 0, False if exit code != 0
-
-        """
-        session = self._ssh.get_transport().open_session()
-        stdin, stdout, stderr = session.exec_command(command)
-        exit_code = session.recv_exit_status()
-        success = exit_code == 0
-
-        if not success:
-            print "%(command)s returned %(exit_code)d" % locals()
-            print "Standard Out: %(stdout)s" % locals()
-            print "Standard Error: %(stderr)s" % locals()
-
-        return success
-
-    def add_flavor(self, flavor):
-        """Add a flavor, using the 'nova-manage' command via SSH.
-
-        :param flavor: Dictionary describing a flavor to add to Nova's DB.
-        :returns: None
-
-        """
-        self._ssh.exec_command("nova-manage instance_type create %(name)s "
-                               "%(ram)s %(vcpus)s %(disk)s %(flavorid)s" %
-                               flavor)
-
-    def delete_flavor(self, flavor_name):
-        """Delete a flavor, using the 'nova-manage' command via SSH.
-
-        :param flavor_name: The name of the flavor to delete.
-        :returns: None
-
-        """
-        self._ssh.exec_command("nova-manage instance_type delete "
-                               "%(flavor_name)s --purge" % locals())
