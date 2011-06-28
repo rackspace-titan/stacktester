@@ -12,12 +12,10 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+import json
 
-import stacktester
-from stacktester import exceptions
 from stacktester import openstack
 
-import json
 import unittest2 as unittest
 
 
@@ -115,27 +113,3 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
         #TODO: SSH into server using new password
-
-#    def test_resize_server_confirm(self):
-#        
-#        post_body = json.dumps({
-#            'resize' : {
-#                'flavor' : {
-#                    'flavorRef': 2                
-#                }
-#            }
-#        })
-#
-#        response, body = self.os.nova.request(
-#            'POST', '/servers/%s/action' % self.server_id, body=post_body)
-#        self.assertEqual('202', response['status'])
-#        self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
-#
-#        post_body = json.dumps({
-#            'confirmResize' : 'null'
-#        })
-#
-#        response, body = self.os.nova.request(
-#            'POST', '/servers/%s/action' % self.server_id, body=post_body)
-#        self.assertEqual('204', response['status'])
-#        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')

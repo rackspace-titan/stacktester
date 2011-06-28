@@ -1,5 +1,3 @@
 httplib2
-glance
 nose
-paramiko
 unittest2
