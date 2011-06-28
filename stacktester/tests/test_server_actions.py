@@ -13,10 +13,8 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-#import random
-#import time
-#
 import stacktester
+from stacktester import exceptions
 from stacktester import openstack
 
 import json
@@ -90,53 +88,6 @@ class ServerActionsTest(unittest.TestCase):
             '/servers/%s' % self.server_id,
             body=body)
 
-#    def test_rebuild_server(self):
-#        """
-#        Test that a server can be rebuilt with a new image
-#        """
-#
-#        self.server.rebuild("http://glance1:9292/v1/images/4")
-#        self.server.waitForStatus('ACTIVE')
-#        rebuilt_server = self.os.servers.get(self.server)
-#        #TODO: let's assert something here
-#
-#
-#    def test_resize_server_confirm(self):
-#        """
-#        Verify the flavor of a server can be changed
-#        """
-#
-#        #Resize the server and wait for the action to finish
-#        new_flavor = self.os.flavors.get(2)
-#        self.server.resize(2)
-#
-#        #Confirm the resize
-#        self.server.confirm_resize()
-#
-#        #Verify that the server's flavor has changed
-#        modified_server = self.os.servers.get(self.server)
-#        self.assertEqual(new_flavor.name, modified_server.flavorId)
-#
-#    def test_resize_server_revert(self):
-#        """
-#        Verify that a re-sized server can be reverted back to its
-#        original flavor
-#        """
-#
-#        # Resize the server and wait for it to finish
-#        new_flavor = self.os.flavors.get(3)
-#        self.server.resize(3)
-#
-#        #TODO: Not checking state at the moment because this test would hang
-#
-#        # Revert the resize
-#        self.server.revert_resize()
-#
-#        # Check that the was reverted to its original flavor
-#        modified_server = self.os.servers.get(server)
-#        self.assertEqual(new_flavor.name, modified_server.flavorId)
-#
-
     def test_reboot_server(self):
         """
         Verify that a server can be rebooted
@@ -150,7 +101,7 @@ class ServerActionsTest(unittest.TestCase):
 
         response, body = self.os.nova.request(
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
-        self.assertEqual(response['status'], '200')
+        self.assertEqual(response['status'], '202')
 
         #verify state change
         self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
@@ -169,8 +120,48 @@ class ServerActionsTest(unittest.TestCase):
 
         response, body = self.os.nova.request(
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
-        self.assertEqual(response['status'], '200')
+        self.assertEqual(response['status'], '202')
 
         #verify state change
         self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+
+    def test_change_server_password(self):
+        """Verify the root password of a server can be changed"""
+
+        post_body = json.dumps({
+            'changePassword' : {
+                'adminPass' : 'test123'
+            }
+        })
+
+        response, body = self.os.nova.request(
+            'POST', '/servers/%s/action' % self.server_id, body=post_body)
+        self.assertEqual('202', response['status'])
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+
+        #TODO: SSH into server using new password
+
+#    def test_resize_server_confirm(self):
+#        
+#        post_body = json.dumps({
+#            'resize' : {
+#                'flavor' : {
+#                    'flavorRef': 2                
+#                }
+#            }
+#        })
+#
+#        response, body = self.os.nova.request(
+#            'POST', '/servers/%s/action' % self.server_id, body=post_body)
+#        self.assertEqual('202', response['status'])
+#        self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
+#
+#        post_body = json.dumps({
+#            'confirmResize' : 'null'
+#        })
+#
+#        response, body = self.os.nova.request(
+#            'POST', '/servers/%s/action' % self.server_id, body=post_body)
+#        self.assertEqual('204', response['status'])
+#        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
