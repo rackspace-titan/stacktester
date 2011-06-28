@@ -8,22 +8,12 @@ class Manager(object):
     """Top-level object to access OpenStack resources."""
 
     def __init__(self):
-        config = stacktester.config.StackConfig()
-        self.nova = self._load_nova(config)
-        self.nova_admin = self._load_nova_admin(config)
-        self.glance = self._load_glance(config)
+        self.config = stacktester.config.StackConfig()
+        self.nova = self._load_nova()
 
-    def _load_nova(self, config):
-        return stacktester.nova.API(config.nova.host,
-                                    config.nova.port,
-                                    config.nova.base_url,
-                                    config.nova.username,
-                                    config.nova.api_key)
-
-    def _load_nova_admin(self, config):
-        return stacktester.nova.AdminClient(config.nova.host,
-                                            config.nova.ssh_port,
-                                            config.nova.ssh_username)
-
-    def _load_glance(self, config):
-        return glance.client.Client(config.glance.host, config.glance.port)
+    def _load_nova(self):
+        return stacktester.nova.API(self.config.nova.host,
+                                    self.config.nova.port,
+                                    self.config.nova.base_url,
+                                    self.config.nova.username,
+                                    self.config.nova.api_key)
