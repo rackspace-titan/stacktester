@@ -5,41 +5,19 @@ import json
 import unittest2 as unittest
 
 
-FIXTURES = [
-    {
-        'name': 'Image1',
-        'disk_format': 'vdi',
-        'container_format': 'ovf',
-        'is_public': False,
-        'properties': {
-            'key1': 'value1',
-        }
-    },
-    {
-        'name': 'Image2',
-        'disk_format': 'vdi',
-        'container_format': 'ovf',
-        'is_public': True,
-        'properties': {
-            'key2': 'value2',
-            'key3': 'value3',
-        }
-    },
-]
-
-
 class ImagesTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
         self.images = {}
-        for FIXTURE in FIXTURES:
-            meta = self.os.glance.add_image(FIXTURE, None)
-            self.images[str(meta['id'])] = meta
+        
+        resp, body = self.os.nova.request(
+            'GET', '/images/%s' % self.os.config.env.get('image_ref'))
+        data = json.loads(body)
+        self.images[str(data['id'])] = data
 
     def tearDown(self):
-        for (image_id, meta) in self.images.items():
-            self.os.glance.delete_image(image_id)
+        pass
 
     def _assert_image_basic(self, image, expected):
         self.assertEqual(expected['id'], image['id'])
@@ -133,8 +111,8 @@ class ImagesTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1
+                'imageRef' : self.os.config.env.get('image_ref'),
+                'flavorRef' : self.os.config.env.get('flavor_ref') 
             }
         })
 
@@ -153,7 +131,7 @@ class ImagesTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/images', body=post_body)
 
-        #TODO Ignoring the incorrect response code so the test can continue        
+        # KNOWN-ISSUE incorrect response code
         #self.assertEqual(response['status'], '202')
         data = json.loads(body)
         image_id = data['image']['id']
