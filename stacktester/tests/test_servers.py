@@ -25,6 +25,8 @@ class ServersTest(unittest.TestCase):
     def setUp(self):
         self.os = openstack.Manager()
         self.config = stacktester.config.StackConfig()
+        self.image_ref = self.os.config.env.get('image_ref')
+        self.flavor_ref = self.os.config.env.get('flavor_ref')
 
     def test_create_delete_server(self):
         """
@@ -34,8 +36,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -66,8 +68,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1,
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
@@ -109,8 +111,8 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 302,
-                'flavorRef' : 1,
+                'imageRef' : -1,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
