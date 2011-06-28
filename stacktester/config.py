@@ -39,40 +39,26 @@ class NovaConfig(object):
         """API key to use when authenticating. Defaults to 'admin_key'."""
         return self.get("api_key", "admin_key")
 
-    @property
-    def ssh_username(self):
-        """Username to use when SSHing to Nova API node. Defaults to 'root'."""
-        return self.get("ssh_username", "root")
-
-    @property
-    def ssh_port(self):
-        """Port to use for SSHing to Nova API node. Defaults to 22."""
-        return int(self.get("ssh_port", 22))
-
-
-class GlanceConfig(object):
-    """Provides configuration information for connecting to Glance."""
-
+class EnvironmentConfig(object):
     def __init__(self, conf):
-        """Initialize a Glance-specific configuration object."""
+        """Initialize a Environment-specific configuration object."""
         self.conf = conf
 
     def get(self, item_name, default_value):
         try:
-            return self.conf.get("glance", item_name)
-        except ConfigParser.NoSectionError:
+            return self.conf.get("environment", item_name)
+        except (ConfigParser.NoSectionError, ConfigParser.NoOptionError):
             return default_value
 
     @property
-    def host(self):
-        """Host for the Glance HTTP API. Defaults to '127.0.0.1'."""
-        return self.get("host", "127.0.0.1")
+    def imageRef(self):
+        """ valid imageRef to use """
+        return self.get("image_ref", 3);
 
     @property
-    def port(self):
-        """Port for the Glance HTTP API. Defaults to 9292."""
-        return int(self.get("port", 9292))
-
+    def flavorRef(self):
+        """ valid flavorRef to use """
+        return self.get("flavor_ref", 1);
 
 class StackConfig(object):
     """Provides `stacktester` configuration information."""
@@ -83,8 +69,8 @@ class StackConfig(object):
         """Initialize a configuration from a path."""
         self._path = path or self._path
         self._conf = self.load_config(self._path)
-        self.glance = GlanceConfig(self._conf)
         self.nova = NovaConfig(self._conf)
+        self.env = EnvironmentConfig(self._conf)
 
     def load_config(self, path=None):
         """Read configuration from given path and return a config object."""
