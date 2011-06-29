@@ -30,16 +30,18 @@ class FlavorsTest(unittest.TestCase):
         self.assertEqual(body_dict.keys(), ['flavor'])
         return body_dict['flavor']
 
-    def _assert_flavor_structure_basic(self, flavor):
+    def _assert_flavor_entity_basic(self, flavor):
         actual_keys = set(flavor.keys())
         expected_keys = set(('id', 'name', 'links'))
         self.assertEqual(actual_keys, expected_keys)
         self._assert_flavor_links(flavor)
 
-    def _assert_flavor_structure_detailed(self, flavor):
+    def _assert_flavor_entity_detailed(self, flavor):
         actual_keys = set(flavor.keys())
         expected_keys = set(('id', 'name', 'ram', 'disk', 'links'))
         self.assertEqual(actual_keys, expected_keys)
+        self.assertEqual(type(flavor['ram']), int)
+        self.assertEqual(type(flavor['disk']), int)
         self._assert_flavor_links(flavor)
 
     def _assert_flavor_links(self, flavor):
@@ -77,7 +79,7 @@ class FlavorsTest(unittest.TestCase):
 
         for flavor in flavors:
             detailed_flavor = self._show_flavor(flavor['id'])
-            self._assert_flavor_structure_detailed(detailed_flavor)
+            self._assert_flavor_entity_detailed(detailed_flavor)
 
     def test_index_flavors_basic(self):
         """
@@ -87,7 +89,7 @@ class FlavorsTest(unittest.TestCase):
         flavors = self._index_flavors()
 
         for flavor in flavors:
-            self._assert_flavor_structure_basic(flavor)
+            self._assert_flavor_entity_basic(flavor)
 
     def test_index_flavors_detailed(self):
         """
@@ -102,4 +104,4 @@ class FlavorsTest(unittest.TestCase):
         flavors = body_dict['flavors']
 
         for flavor in flavors:
-            self._assert_flavor_structure_detailed(flavor)
+            self._assert_flavor_entity_detailed(flavor)
