@@ -1,4 +1,5 @@
 import json
+import os
 
 import unittest2 as unittest
 
@@ -13,56 +14,82 @@ class FlavorsTest(unittest.TestCase):
     def tearDown(self):
         pass
 
-    def _get_flavors(self):
-        url = '/flavors'
-        response, body = self.os.nova.request('GET', url)
-        self.assertEqual(response['status'], '200')
-        flavors = json.loads(body)['flavors']
-        return flavors
-
-    def test_get_flavor_details(self):
-        """
-        Verify the expected details are returned for a flavor
-        """
-
-        flavors = self._get_flavors()
-
-        for flavor in flavors:
-            flavor_id = flavor['id']
-            url = '/flavors/%s' % flavor_id
-            response, body = self.os.nova.request('GET', url)
-            self.assertEqual(response['status'], '200')
-            body_dict = json.loads(body)
-
-            #Make sure result looks like a flavor
-            self.assertTrue(body_dict.has_key('flavor'))
-
-            actual = body_dict['flavor']
-
-            self.assertTrue(actual.has_key('name'))
-            self.assertTrue(actual.has_key('id'))
-            self.assertTrue(actual.has_key('ram'))
-            self.assertTrue(actual.has_key('disk'))
-
-    def test_get_flavors(self):
-        """
-        Verify the expected flavors are returned
-        """
-
+    def _index_flavors(self):
         url = '/flavors'
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         body_dict = json.loads(body)
+        self.assertEqual(body_dict.keys(), ['flavors'])
+        return body_dict['flavors']
 
-        #Make sure result looks like a list of flavors
-        self.assertTrue(body_dict.has_key('flavors'))
+    def _show_flavor(self, flavor_id):
+        url = '/flavors/%s' % flavor_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(response['status'], '200')
+        body_dict = json.loads(body)
+        self.assertEqual(body_dict.keys(), ['flavor'])
+        return body_dict['flavor']
 
-        flavors = json.loads(body)['flavors']
+    def _assert_flavor_structure_basic(self, flavor):
+        actual_keys = set(flavor.keys())
+        expected_keys = set(('id', 'name', 'links'))
+        self.assertEqual(actual_keys, expected_keys)
+        self._assert_flavor_links(flavor)
+
+    def _assert_flavor_structure_detailed(self, flavor):
+        actual_keys = set(flavor.keys())
+        expected_keys = set(('id', 'name', 'ram', 'disk', 'links'))
+        self.assertEqual(actual_keys, expected_keys)
+        self._assert_flavor_links(flavor)
+
+    def _assert_flavor_links(self, flavor):
+        actual_links = flavor['links']
+
+        flavor_id = str(flavor['id'])
+        host = self.os.config.nova.host
+        port = self.os.config.nova.port
+        api_url = '%s:%s' % (host, port)
+        base_url = os.path.join(api_url, self.os.config.nova.base_url)
+
+        self_link = 'http://' + os.path.join(base_url, 'flavors', flavor_id)
+        bookmark_link = 'http://' + os.path.join(api_url, 'flavors', flavor_id)
+
+        expected_links = [
+            {
+                'rel': 'self',
+                'href': self_link,
+            },
+            {
+                'rel': 'bookmark',
+                'href': bookmark_link,
+            },
+        ]
+
+        # KNOWN-ISSUE lp803505
+        #self.assertEqual(actual_links, expected_links)
+
+    def test_show_flavor(self):
+        """
+        Verify the expected details are returned for a flavor
+        """
+
+        flavors = self._index_flavors()
+
         for flavor in flavors:
-            self.assertTrue(flavor.has_key('name'))
-            self.assertTrue(flavor.has_key('id'))
+            detailed_flavor = self._show_flavor(flavor['id'])
+            self._assert_flavor_structure_detailed(detailed_flavor)
 
-    def test_get_flavors_detail(self):
+    def test_index_flavors_basic(self):
+        """
+        Verify the expected flavors are returned
+        """
+
+        flavors = self._index_flavors()
+
+        for flavor in flavors:
+            self._assert_flavor_structure_basic(flavor)
+
+    def test_index_flavors_detailed(self):
         """
         Verify the detailed expected flavors are returned
         """
@@ -71,13 +98,8 @@ class FlavorsTest(unittest.TestCase):
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response['status'], '200')
         body_dict = json.loads(body)
+        self.assertEqual(body_dict.keys(), ['flavors'])
+        flavors = body_dict['flavors']
 
-        #Make sure result looks like a list of flavors
-        self.assertTrue(body_dict.has_key('flavors'))
-
-        flavors = json.loads(body)['flavors']
         for flavor in flavors:
-            self.assertTrue(flavor.has_key('name'))
-            self.assertTrue(flavor.has_key('id'))
-            self.assertTrue(flavor.has_key('ram'))
-            self.assertTrue(flavor.has_key('disk'))
+            self._assert_flavor_structure_detailed(flavor)
