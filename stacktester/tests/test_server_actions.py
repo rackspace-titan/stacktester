@@ -78,10 +78,7 @@ class ServerActionsTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
 
-        #verify state change
-        #ssh and verify uptime is less than before
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
-        #self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #TODO ssh and verify uptime is less than before
 
     def test_reboot_server_hard(self):
         """
@@ -98,9 +95,7 @@ class ServerActionsTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
 
-        #verify state change
-        #self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
-        #self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #TODO ssh and verify uptime is less than before
 
     def test_change_server_password(self):
         """Verify the root password of a server can be changed"""
