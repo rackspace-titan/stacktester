@@ -32,9 +32,9 @@ class ServersMetadataTest(unittest.TestCase):
                 'imageRef' : self.image_ref,
                 'flavorRef' : self.flavor_ref,
                 'metadata' : {
-                    'testEntry' : 'testValue'
-                }
-            }
+                    'testEntry' : 'testValue',
+                },
+            },
         })
 
         response, body = self.os.nova.request('POST', '/servers', body=body)
@@ -63,10 +63,12 @@ class ServersMetadataTest(unittest.TestCase):
     def test_update_server_metadata(self):
         """Test that we can update metadata for a server"""
 
-        post_metadata = {'metadata' : {
-            'new_entry1' : 'new_value1',
-            'new_entry2' : 'new_value2',
-        }}
+        post_metadata = {
+            'metadata' : {
+                'new_entry1' : 'new_value1',
+                'new_entry2' : 'new_value2',
+            },
+        }
         post_body = json.dumps(post_metadata)
 
         url = '/sirvers/%s/meta' % self.server_id
@@ -121,7 +123,7 @@ class ServersMetadataTest(unittest.TestCase):
         expected = {
             'meta':{
                 'testEntry':'testValue',
-            }
+            },
         }
         self.assertDictEqual(expected, result)
 
