@@ -143,9 +143,7 @@ class ServerActionsTest(unittest.TestCase):
         """ Verify that a server can be resized """
         post_body = json.dumps({
             'resize' : {
-                'flavor' : {
-                    'flavorRef': 2                
-                }
+                'flavorRef': 2                
             }
         })
 
@@ -172,9 +170,7 @@ class ServerActionsTest(unittest.TestCase):
         
         post_body = json.dumps({
             'resize' : {
-                'flavor' : {
-                    'flavorRef': 2                
-                }
+                'flavorRef': 2                
             }
         })
 
