@@ -71,7 +71,7 @@ class ServersMetadataTest(unittest.TestCase):
 
         url = '/sirvers/%s/meta' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
-        # KNOWN-ISSUE lp?
+        # KNOWN-ISSUE lp:804067
         #self.assertEqual(201, response.status)
 
         url = '/servers/%s/meta' % self.server_id
@@ -99,7 +99,7 @@ class ServersMetadataTest(unittest.TestCase):
         url = '/servers/%s/meta' % self.server_id
         post_body = json.dumps(expected)
         response, body = self.os.nova.request('POST', url, body=post_body)
-        # KNOWN-ISSUE lp?
+        # KNOWN-ISSUE lp:804067
         #self.assertEqual(201, response.status)
 
         url = '/servers/%s/meta' % self.server_id
@@ -145,7 +145,7 @@ class ServersMetadataTest(unittest.TestCase):
 
         url = '/servers/%s/meta/new_meta1' % self.server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
-        # KNOWN-ISSUE lp?
+        # KNOWN-ISSUE lp:804067
         #self.assertEqual(201, response.status)
         result = json.loads(body)
         self.assertDictEqual(expected_meta, result)
@@ -168,7 +168,7 @@ class ServersMetadataTest(unittest.TestCase):
 
         url = '/servers/%s/meta/testEntry' % self.server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
-        # KNOWN-ISSUE lp?
+        # KNOWN-ISSUE lp:804067
         #self.assertEqual(201, response.status)
         result = json.loads(body)
         self.assertEqual(expected_meta, result)
@@ -186,7 +186,7 @@ class ServersMetadataTest(unittest.TestCase):
 
         url = '/servers/%s/meta/testEntry' % self.server_id
         response, body = self.os.nova.request('DELETE', url)
-        # KNOWN-ISSUE lp?
+        # KNOWN-ISSUE lp:804067
         #self.assertEquals(204, response.status)
 
 
