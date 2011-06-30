@@ -40,8 +40,7 @@ class ServersTest(unittest.TestCase):
             }
         })
 
-        resp, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        resp, body = self.os.nova.request('POST', '/servers', body=post_body)
 
         data = json.loads(body)
         server_id = data['server']['id']
@@ -52,10 +51,8 @@ class ServersTest(unittest.TestCase):
 
         self.assertEqual('testserver', data['server']['name'])
 
-        response, body = self.os.nova.request(
-            'DELETE',
-            '/servers/%s' % server_id,
-            body=body)
+        url = '/servers/%s' % server_id
+        response, body = self.os.nova.request('DELETE', url, body=body)
 
         # Raises TimeOutException on failure
         self.os.nova.poll_request_status('GET', '/servers/%s' % server_id, 404)
@@ -74,8 +71,7 @@ class ServersTest(unittest.TestCase):
         })
 
         # Create Server
-        resp, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        resp, body = self.os.nova.request('POST', '/servers', body=post_body)
 
         # KNOWN-ISSUE lp796742
         #self.assertEqual(202, resp.status)
@@ -93,8 +89,9 @@ class ServersTest(unittest.TestCase):
                 'name' : 'updatedtestserver'
             }
         })
-        resp, body = self.os.nova.request(
-            'PUT', '/servers/%s' % server_id, body=put_body)
+
+        url = '/servers/%s' % server_id
+        resp, body = self.os.nova.request('PUT', url, body=put_body)
 
         self.assertEqual(204, resp.status)
 
@@ -118,8 +115,7 @@ class ServersTest(unittest.TestCase):
             }
         })
 
-        resp, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        resp, body = self.os.nova.request('POST', '/servers', body=post_body)
 
         self.assertTrue(400, resp.status)
 
@@ -136,7 +132,6 @@ class ServersTest(unittest.TestCase):
             }
         })
 
-        resp, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        resp, body = self.os.nova.request('POST', '/servers', body=post_body)
 
         self.assertTrue(400, resp.status)

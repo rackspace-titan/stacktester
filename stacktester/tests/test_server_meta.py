@@ -26,7 +26,7 @@ class ServersMetadataTest(unittest.TestCase):
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
 
-        post_body = json.dumps({
+        body = json.dumps({
             'server' : {
                 'name' : 'testserver',
                 'imageRef' : self.image_ref,
@@ -37,8 +37,7 @@ class ServersMetadataTest(unittest.TestCase):
             }
         })
 
-        response, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        response, body = self.os.nova.request('POST', '/servers', body=body)
 
         data = json.loads(body)
         self.server_id = data['server']['id']
@@ -49,8 +48,8 @@ class ServersMetadataTest(unittest.TestCase):
     def test_get_server_metadata(self):
         """Test that we can retrieve metadata for a server"""
 
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
@@ -70,13 +69,13 @@ class ServersMetadataTest(unittest.TestCase):
         }}
         post_body = json.dumps(post_metadata)
 
-        response, body = self.os.nova.request(
-            'POST', '/servers/%s/meta' % self.server_id, body=post_body)
+        url = '/sirvers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=post_body)
         # KNOWN-ISSUE lp?
         #self.assertEqual(201, response.status)
 
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
@@ -97,15 +96,14 @@ class ServersMetadataTest(unittest.TestCase):
             },
         }
 
-        response, body = self.os.nova.request(
-            'POST', '/servers/%s/meta' % self.server_id, 
-            body=json.dumps(expected)
-        )
+        url = '/servers/%s/meta' % self.server_id
+        post_body = json.dumps(expected)
+        response, body = self.os.nova.request('POST', url, body=post_body)
         # KNOWN-ISSUE lp?
         #self.assertEqual(201, response.status)
 
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
@@ -115,8 +113,8 @@ class ServersMetadataTest(unittest.TestCase):
     def test_get_server_metadata_key(self):
         """Test that we can retrieve specific metadata key for a server"""
 
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta/testEntry' % self.server_id)
+        url = '/servers/%s/meta/testEntry' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
@@ -145,16 +143,16 @@ class ServersMetadataTest(unittest.TestCase):
 
         put_body = json.dumps(expected_meta)
 
-        response, body = self.os.nova.request(
-            'PUT', '/servers/%s/meta/new_meta1' % self.server_id, body=put_body)
+        url = '/servers/%s/meta/new_meta1' % self.server_id
+        response, body = self.os.nova.request('PUT', url, body=put_body)
         # KNOWN-ISSUE lp?
         #self.assertEqual(201, response.status)
         result = json.loads(body)
         self.assertDictEqual(expected_meta, result)
 
         # Now check all metadata to make sure the other values are there
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         result = json.loads(body)
         self.assertDictEqual(expected_metadata, result)
 
@@ -168,16 +166,16 @@ class ServersMetadataTest(unittest.TestCase):
         }
         put_body = json.dumps(expected_meta)
 
-        response, body = self.os.nova.request(
-            'PUT', '/servers/%s/meta/testEntry' % self.server_id, body=put_body)
+        url = '/servers/%s/meta/testEntry' % self.server_id
+        response, body = self.os.nova.request('PUT', url, body=put_body)
         # KNOWN-ISSUE lp?
         #self.assertEqual(201, response.status)
         result = json.loads(body)
         self.assertEqual(expected_meta, result)
 
         # Now check all metadata to make sure the other values are there
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         result = json.loads(body)
         expected_metadata = {}
         expected_metadata['metadata'] = expected_meta['meta']
@@ -186,14 +184,14 @@ class ServersMetadataTest(unittest.TestCase):
     def test_delete_server_metadata_key(self):
         """Test that we can delete metadata for a server"""
 
-        response, body = self.os.nova.request(
-            'DELETE', '/servers/%s/meta/testEntry' % self.server_id)
+        url = '/servers/%s/meta/testEntry' % self.server_id
+        response, body = self.os.nova.request('DELETE', url)
         # KNOWN-ISSUE lp?
         #self.assertEquals(204, response.status)
 
 
-        response, body = self.os.nova.request(
-            'GET', '/servers/%s/meta' % self.server_id)
+        url = '/servers/%s/meta' % self.server_id
+        response, body = self.os.nova.request('GET', url)
         self.assertEquals(200, response.status)
 
         result = json.loads(body)
