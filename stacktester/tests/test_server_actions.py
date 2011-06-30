@@ -19,55 +19,83 @@ from stacktester import openstack
 import unittest2 as unittest
 
 
-class ServersTest(unittest.TestCase):
+class ServerActionsTest(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.os = openstack.Manager()
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-                'imageRef' : 3,
-                'flavorRef' : 1
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
             }
         })
 
         response, body = self.os.nova.request(
             'POST', '/servers', body=post_body)
+        # KNOWN-ISSUE lp802621
+        #self.assertEqual('202', response['status'])
 
         data = json.loads(body)
+
         self.server_id = data['server']['id']
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
-    def tearDown(self):
-        self.os.nova.request('DELETE', '/servers/%s' % self.server_id)
+    @classmethod
+    def tearDownClass(self):
+        post_body = json.dumps({
+            'server' : {
+                'name' : 'testserver',
+                'imageRef' : self.image_ref,
+                'flavorRef' : self.flavor_ref,
+            }
+        })
+        response, body = self.os.nova.request(
+            'DELETE',
+            '/servers/%s' % self.server_id,
+            body=body)
+        self.assertEqual('204', response['status'])
 
-    def test_soft_reboot_server(self):
-        """Verify a server can be rebooted with the soft option"""
+    def test_reboot_server(self):
+        """
+        Verify that a server can be rebooted
+        """
 
         post_body = json.dumps({
             'reboot' : {
-                'type' : 'SOFT'
+                'type' : 'SOFT',
             }
         })
 
         response, body = self.os.nova.request(
-            'POST', '/servers/%s/action' % self.server_id, body=post_body)
-        self.assertEqual('202', response['status'])
+            'POST', "/servers/%s/action" % self.server_id, body=post_body)
+        self.assertEqual(response['status'], '202')
+
+        #verify state change
+        self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
-    def test_hard_reboot_server(self):
-        """ Verify a server can be rebooted with the hard option """
+    def test_reboot_server_hard(self):
+        """
+        Verify that a server can be rebooted
+        """
 
         post_body = json.dumps({
             'reboot' : {
-                'type' : 'HARD'
+                'type' : 'HARD',
             }
         })
 
         response, body = self.os.nova.request(
-            'POST', '/servers/%s/action' % self.server_id, body=post_body)
-        self.assertEqual('202', response['status'])
+            'POST', "/servers/%s/action" % self.server_id, body=post_body)
+        self.assertEqual(response['status'], '202')
+
+        #verify state change
+        self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
     def test_change_server_password(self):
