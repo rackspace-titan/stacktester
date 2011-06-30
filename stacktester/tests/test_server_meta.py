@@ -54,7 +54,11 @@ class ServersMetadataTest(unittest.TestCase):
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
-        expected = {'metadata' : { 'testEntry' : 'testValue'}}
+        expected = {
+            'metadata' : { 
+                'testEntry' : 'testValue',
+            },
+        }
         self.assertEqual(expected, result)
 
     def test_update_server_metadata(self):
@@ -86,10 +90,12 @@ class ServersMetadataTest(unittest.TestCase):
         removing unspecified entries
         """
 
-        expected = {'metadata' : {
-            'new_entry1' : 'new_value1',
-            'new_entry2' : 'new_value2',
-        }}
+        expected = {
+            'metadata' : {
+                'new_entry1' : 'new_value1',
+                'new_entry2' : 'new_value2',
+            },
+        }
 
         response, body = self.os.nova.request(
             'POST', '/servers/%s/meta' % self.server_id, 
@@ -114,20 +120,28 @@ class ServersMetadataTest(unittest.TestCase):
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
-        expected = {'meta':{'testEntry':'testValue'}}
+        expected = {
+            'meta':{
+                'testEntry':'testValue',
+            }
+        }
         self.assertDictEqual(expected, result)
 
     def test_add_server_metadata_key(self):
         """Test that we can add specific metadata key to a server"""
 
-        expected_metadata = {'metadata' : {
-            'testEntry' : 'testValue',
-            'new_meta1' : 'new_value1', 
-        }}
+        expected_metadata = {
+            'metadata' : {
+                'testEntry' : 'testValue',
+                'new_meta1' : 'new_value1', 
+            },
+        }
 
-        expected_meta = {'meta' : {
-            'new_meta1' : 'new_value1', 
-        }}
+        expected_meta = {
+            'meta' : {
+                'new_meta1' : 'new_value1', 
+            },
+        }
 
         put_body = json.dumps(expected_meta)
 
@@ -147,9 +161,11 @@ class ServersMetadataTest(unittest.TestCase):
     def test_update_server_metadata_key(self):
         """Test that we can update specific metadata key for a server"""
 
-        expected_meta = { 'meta' : {
-            'testEntry' : 'testValue2'
-        }}
+        expected_meta = {
+            'meta' : {
+            'testEntry' : 'testValue2',
+            },
+        }
         put_body = json.dumps(expected_meta)
 
         response, body = self.os.nova.request(
