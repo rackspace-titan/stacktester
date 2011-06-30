@@ -40,11 +40,12 @@ class ServersTest(unittest.TestCase):
             'addresses',
             'links',
 
-            #KNOWN-ISSUE
+            #KNOWN-ISSUE lp804093
             'uuid',
 
-            #KNOWN-ISSUE
+            #KNOWN-ISSUE lp804096
             #'created',
+            #'updated',
 
             #KNOWN-ISSUE
             #'primaryIPv4',
@@ -168,7 +169,7 @@ class ServersTest(unittest.TestCase):
         url = '/servers/%s' % created_server['id']
         response, body = self.os.nova.request('DELETE', url)
 
-        # KNOWN-ISSUE
+        # KNOWN-ISSUE lp804087
         #self.assertEqual(204, response.status)
         self.assertEqual(202, response.status)
 
@@ -210,7 +211,7 @@ class ServersTest(unittest.TestCase):
         url = '/servers/%s' % created_server['id']
         response, body = self.os.nova.request('DELETE', url)
 
-        # KNOWN-ISSUE
+        # KNOWN-ISSUE lp804087
         #self.assertEqual(204, response.status)
         self.assertEqual(202, response.status)
 
@@ -301,7 +302,7 @@ class ServersTest(unittest.TestCase):
                 "code": 400,
             },
         }
-        # KNOWN-ISSUE
+        # KNOWN-ISSUE - The error message is confusing and should be improved
         #self.assertEqual(fault, expected_fault)
 
     def test_create_server_invalid_flavor(self):
@@ -327,7 +328,7 @@ class ServersTest(unittest.TestCase):
 
         self.assertEqual(400, resp.status)
 
-        # KNOWN-ISSUE
+        # KNOWN-ISSUE lp804084
         #fault = json.loads(body)
         expected_fault = {
             "badRequest": {
