@@ -112,7 +112,7 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        time.sleep(30)
+        time.sleep(90)
         #TODO ssh and verify uptime is less than before
         post_reboot_uptime = self._get_uptime()
         self.assertTrue(initial_uptime > post_reboot_uptime)
