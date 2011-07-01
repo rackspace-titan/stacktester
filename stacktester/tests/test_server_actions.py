@@ -192,4 +192,4 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)        
-        self.assertEqual(self.flavor_refra, data['server']['flavorRef'])
+        self.assertEqual(self.flavor_ref, data['server']['flavorRef'])
