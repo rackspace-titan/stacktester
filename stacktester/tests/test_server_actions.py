@@ -14,6 +14,7 @@
 #    under the License.
 import json
 
+from stacktester import exceptions
 from stacktester import openstack
 
 import unittest2 as unittest
@@ -25,7 +26,6 @@ class ServerActionsTest(unittest.TestCase):
  
     @classmethod
     def setUpClass(self):
-        self.multi_node = openstack.Manager().config.env.multi_node        
         self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
@@ -58,6 +58,12 @@ class ServerActionsTest(unittest.TestCase):
             'DELETE',
             '/servers/%s' % self.server_id)
 
+    def _wait_for_status(self, server_id, status):
+        try:
+            self.os.nova.wait_for_server_status(server_id, status)
+        except exceptions.TimeoutException:
+            self.fail("Server failed to change status to %s" % status)
+
     def test_reboot_server(self):
         """
         Verify that a server can be rebooted
@@ -75,8 +81,8 @@ class ServerActionsTest(unittest.TestCase):
 
         #verify state change
         # KNOWN-ISSUE lp?        
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #self._wait_for_status(self.server_id, 'REBOOT')
+        self._wait_for_status(self.server_id, 'ACTIVE')
 
     def test_reboot_server_hard(self):
         """
@@ -95,8 +101,8 @@ class ServerActionsTest(unittest.TestCase):
 
         #verify state change
         # KNOWN-ISSUE lp?         
-        #self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #self._wait_for_status(self.server_id, 'HARD_REBOOT')
+        self._wait_for_status(self.server_id, 'ACTIVE')
 
     def test_change_server_password(self):
         """Verify the root password of a server can be changed"""
@@ -110,13 +116,15 @@ class ServerActionsTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers/%s/action' % self.server_id, body=post_body)
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_status(self.server_id, 'ACTIVE')
 
         #TODO: SSH into server using new password
 
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_rebuild_server(self):
-        """ Verify that a server instance can rebuilt using a different image """
+        """ 
+        Verify that a server instance can be rebuilt using a different image 
+        """
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
@@ -125,20 +133,19 @@ class ServerActionsTest(unittest.TestCase):
             }
         })
         
-        response, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        response, body = self.os.nova.request('POST','/servers', body=post_body)
         
         # KNOWN-ISSUE lp?  
         # self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_status(self.server_id, 'REBUILD')
+        self._wait_for_status(self.server_id, 'ACTIVE')
         
         #Check that the instance's imageRef matches the new imageRef
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)        
         self.assertEqual(2, data['server']['imageRef'])   
     
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_resize_server_confirm(self):
         """ Verify that a server can be resized """
         post_body = json.dumps({
@@ -150,7 +157,7 @@ class ServerActionsTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers/%s/action' % self.server_id, body=post_body)
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
+        self._wait_for_status(self.server_id, 'VERIFY_RESIZE')
 
         post_body = json.dumps({
             'confirmResize' : 'null'
@@ -159,12 +166,12 @@ class ServerActionsTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers/%s/action' % self.server_id, body=post_body)
         self.assertEqual('204', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_status(self.server_id, 'ACTIVE')
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)        
         self.assertEqual(2, data['server']['flavorRef'])
 
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_resize_server_revert(self):
         """ Verify that a server resize can be reverted """
         
@@ -177,7 +184,7 @@ class ServerActionsTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers/%s/action' % self.server_id, body=post_body)
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
+        self._wait_for_status(self.server_id, 'VERIFY_RESIZE')
 
         post_body = json.dumps({
             'revertResize' : 'null'
@@ -186,7 +193,7 @@ class ServerActionsTest(unittest.TestCase):
         response, body = self.os.nova.request(
             'POST', '/servers/%s/action' % self.server_id, body=post_body)
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_status(self.server_id, 'ACTIVE')
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)        
-        self.assertEqual(self.flavor_refra, data['server']['flavorRef'])
+        self.assertEqual(self.flavor_ref, data['server']['flavorRef'])
