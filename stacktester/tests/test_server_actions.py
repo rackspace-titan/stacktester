@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import json
+import time
 
 from stacktester import exceptions
 from stacktester import openstack
@@ -92,8 +93,8 @@ class ServerRebootActionTest(unittest.TestCase):
         """
         Verify that a server can be rebooted
         """
-        self.assertEqual(self.access_ip, 'poop')
 
+        time.sleep(20)
         #ssh and get the uptime
         initial_uptime = self._get_uptime()
 
