@@ -15,7 +15,7 @@ class Client(object):
 
     def poll_request(self, method, url, check_response, **kwargs):
 
-        timeout = kwargs.pop('timeout', 180)
+        timeout = kwargs.pop('timeout', 300)
         interval = kwargs.pop('interval', 2)
         # Start timestamp
         start_ts = int(time.time())
