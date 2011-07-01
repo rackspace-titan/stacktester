@@ -80,7 +80,7 @@ class ServerRebootActionTest(unittest.TestCase):
             password='testpwd', look_for_keys=False)
 
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
-        uptime = int(stdout.read().split().pop(0))
+        uptime = float(stdout.read().split().pop(0))
         ssh.close()
         print uptime
         return uptime
