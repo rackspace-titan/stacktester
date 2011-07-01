@@ -10,12 +10,6 @@ class ImagesTest(unittest.TestCase):
 
     def setUp(self):
         self.os = openstack.Manager()
-    #    self.images = {}
-
-    #    resp, body = self.os.nova.request(
-    #        'GET', '/images/%s' % self.os.config.env.image_ref)
-    #    data = json.loads(body)
-    #    self.images[str(data['image']['id'])] = data
 
     def tearDown(self):
         pass
@@ -41,7 +35,8 @@ class ImagesTest(unittest.TestCase):
             },
         ]
 
-        self.assertEqual(image['links'], expected_links)
+        # KNOWN-ISSUE lp803505
+        #self.assertEqual(image['links'], expected_links)
 
     def _assert_image_entity_basic(self, image):
         actual_keys = set(image.keys())
@@ -52,8 +47,7 @@ class ImagesTest(unittest.TestCase):
         ))
         self.assertEqual(actual_keys, expected_keys)
 
-        # KNOWN-ISSUE lp803505
-        #self._assert_image_links(image)
+        self._assert_image_links(image)
 
     def _assert_image_entity_detailed(self, image):
         actual_keys = set(image.keys())
@@ -68,8 +62,7 @@ class ImagesTest(unittest.TestCase):
         ))
         self.assertEqual(actual_keys, expected_keys)
 
-        # KNOWN-ISSUE lp803505
-        #self._assert_image_links(image)
+        self._assert_image_links(image)
 
     def test_index(self):
         """Verify images can be listed"""
