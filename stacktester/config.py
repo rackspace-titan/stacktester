@@ -63,7 +63,7 @@ class EnvironmentConfig(object):
     @property
     def multi_node(self):
         """ Does the test environment have more than one compute node """
-        return self.get("multi_node", 'false');
+        return self.get("multi_node", 'false') != 'false'
 
 class StackConfig(object):
     """Provides `stacktester` configuration information."""

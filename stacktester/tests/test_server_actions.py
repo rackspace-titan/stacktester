@@ -25,7 +25,6 @@ class ServerActionsTest(unittest.TestCase):
  
     @classmethod
     def setUpClass(self):
-        self.multi_node = openstack.Manager().config.env.multi_node        
         self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
@@ -114,9 +113,12 @@ class ServerActionsTest(unittest.TestCase):
 
         #TODO: SSH into server using new password
 
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(multi_node == 'false',
+                     'Test requires more than one compute node')
     def test_rebuild_server(self):
-        """ Verify that a server instance can rebuilt using a different image """
+        """ 
+        Verify that a server instance can be rebuilt using a different image 
+        """
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
@@ -125,8 +127,7 @@ class ServerActionsTest(unittest.TestCase):
             }
         })
         
-        response, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
+        response, body = self.os.nova.request('POST','/servers', body=post_body)
         
         # KNOWN-ISSUE lp?  
         # self.assertEqual('202', response['status'])
@@ -138,7 +139,8 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)        
         self.assertEqual(2, data['server']['imageRef'])   
     
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(multi_node == 'false',
+                     'Test requires more than one compute node')
     def test_resize_server_confirm(self):
         """ Verify that a server can be resized """
         post_body = json.dumps({
@@ -164,7 +166,8 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)        
         self.assertEqual(2, data['server']['flavorRef'])
 
-    @unittest.skipIf(multi_node == 'false', 'Test requires more than one compute node')
+    @unittest.skipIf(multi_node == 'false',
+                     'Test requires more than one compute node')
     def test_resize_server_revert(self):
         """ Verify that a server resize can be reverted """
         
