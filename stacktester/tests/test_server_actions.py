@@ -52,7 +52,6 @@ class ServerRebootActionTest(unittest.TestCase):
         data = json.loads(body)
         #current impl
         self.access_ip = data['server']['addresses']['private'][0]['addr']
-        print self.access_ip
         #current Spec
         #self.access_ip = data['server']['accessIPv4']
 
@@ -93,7 +92,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
         Verify that a server can be rebooted
         """
-
+        self.assertEqual(self.access_ip, '192.168.0.2')
         #ssh and get the uptime
         initial_uptime = self._get_uptime()
 
