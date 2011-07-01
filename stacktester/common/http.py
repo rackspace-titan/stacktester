@@ -24,7 +24,7 @@ class Client(object):
             resp, body = self.request(method, url, **kwargs)
             if (check_response(resp, body)):
                 break
-            if (int(time.time()) - start_ts >= (timeout * 1000)):
+            if (int(time.time()) - start_ts >= timeout):
                 raise exceptions.TimeoutException
             time.sleep(interval)
 
