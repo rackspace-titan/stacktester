@@ -74,6 +74,8 @@ class ServerRebootActionTest(unittest.TestCase):
     def _get_uptime(self):
         
         ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
         ssh.connect(self.access_ip, username='root', 
             password='testpwd', look_for_keys=False)
 
