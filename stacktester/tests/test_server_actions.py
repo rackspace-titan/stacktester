@@ -113,8 +113,7 @@ class ServerActionsTest(unittest.TestCase):
 
         #TODO: SSH into server using new password
 
-    @unittest.skipIf(multi_node == 'false',
-                     'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_rebuild_server(self):
         """ 
         Verify that a server instance can be rebuilt using a different image 
@@ -139,8 +138,7 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)        
         self.assertEqual(2, data['server']['imageRef'])   
     
-    @unittest.skipIf(multi_node == 'false',
-                     'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_resize_server_confirm(self):
         """ Verify that a server can be resized """
         post_body = json.dumps({
@@ -166,8 +164,7 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)        
         self.assertEqual(2, data['server']['flavorRef'])
 
-    @unittest.skipIf(multi_node == 'false',
-                     'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
     def test_resize_server_revert(self):
         """ Verify that a server resize can be reverted """
         
