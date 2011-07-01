@@ -92,7 +92,8 @@ class ServerRebootActionTest(unittest.TestCase):
         """
         Verify that a server can be rebooted
         """
-        self.assertEqual(self.access_ip, '192.168.0.2')
+        self.assertEqual(self.access_ip, 'poop')
+
         #ssh and get the uptime
         initial_uptime = self._get_uptime()
 
