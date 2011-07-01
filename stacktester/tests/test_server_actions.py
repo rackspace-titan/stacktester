@@ -52,6 +52,7 @@ class ServerRebootActionTest(unittest.TestCase):
         data = json.loads(body)
         #current impl
         self.access_ip = data['server']['addresses']['private'][0]['addr']
+        print self.access_ip
         #current Spec
         #self.access_ip = data['server']['accessIPv4']
 
