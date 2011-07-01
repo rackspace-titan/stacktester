@@ -75,7 +75,7 @@ class ServerRebootActionTest(unittest.TestCase):
         
         ssh = paramiko.SSHClient()
         ssh.connect(self.access_ip, username='root', 
-            password='testpwd')
+            password='testpwd', look_for_keys=False)
 
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = int(stdout.read().split().pop(0))
