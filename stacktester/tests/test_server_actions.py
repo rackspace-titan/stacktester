@@ -80,7 +80,7 @@ class ServerRebootActionTest(unittest.TestCase):
         ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
         ssh.connect(self.access_ip, username='root', 
-            password='testpwd', look_for_keys=False, timeout=self.ssh_timeout)
+            password='testpwd', look_for_keys=False, timeout=300)
 
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
