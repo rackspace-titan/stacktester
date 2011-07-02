@@ -112,7 +112,6 @@ class ServerRebootActionTest(unittest.TestCase):
         Verify that a server can be rebooted
         """
 
-        time.sleep(20)
         #ssh and get the uptime
         initial_time_started = self._get_time_started()
 
@@ -135,8 +134,12 @@ class ServerRebootActionTest(unittest.TestCase):
 
     def test_reboot_server_hard(self):
         """
-        Verify that a server can be rebooted
+        Verify that a server can be hard rebooted
         """
+
+        #ssh and get the uptime
+        initial_time_started = self._get_time_started()
+
 
         post_body = json.dumps({
             'reboot' : {
@@ -144,11 +147,15 @@ class ServerRebootActionTest(unittest.TestCase):
             }
         })
 
+
         response, body = self.os.nova.request(
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
-
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._connect_until_closed()
         #ssh and verify uptime is less than before
+        post_reboot_time_started = self._get_time_started()
+        self.assertTrue(initial_time_started < post_reboot_time_started)
 
 
 class ServerActionsTest(unittest.TestCase):
