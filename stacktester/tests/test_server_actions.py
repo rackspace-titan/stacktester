@@ -71,7 +71,8 @@ class ServerRebootActionTest(unittest.TestCase):
             body=delete_body)
         #self.assertEqual('204', response['status'])
 
-    def _get_uptime(self):
+    def _get_time_started(self):
+        """Return the time the server was started"""
         
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(
@@ -98,7 +99,7 @@ class ServerRebootActionTest(unittest.TestCase):
 
         time.sleep(20)
         #ssh and get the uptime
-        initial_uptime = self._get_uptime()
+        initial_time_started = self._get_time_started()
 
 
         post_body = json.dumps({
@@ -114,8 +115,8 @@ class ServerRebootActionTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         time.sleep(90)
         #TODO ssh and verify uptime is less than before
-        post_reboot_uptime = self._get_uptime()
-        self.assertTrue(initial_uptime > post_reboot_uptime)
+        post_reboot_time_started = self._get_time_started()
+        self.assertTrue(initial_uptime < post_reboot_uptime)
 
     def test_reboot_server_hard(self):
         """
