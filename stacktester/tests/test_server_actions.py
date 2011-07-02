@@ -90,7 +90,7 @@ class ServerRebootActionTest(unittest.TestCase):
                 continue
         if _timeout:
             raise socket.error("SSH connect timed out")
-        
+        return ssh
 
     def _get_time_started(self):
         """Return the time the server was started"""
