@@ -88,16 +88,18 @@ class ServerRebootActionTest(unittest.TestCase):
 
     def _connect_until_closed(self):
         """Return the time the server was started"""
-        
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(
-            paramiko.AutoAddPolicy())
-        ssh.connect(self.access_ip, username='root', 
-            password='testpwd', look_for_keys=False)
-        _transport = ssh.get_transport()
-        while _transport.is_active():
-            time.sleep(5)
-        ssh.close()
+        try:
+            ssh = paramiko.SSHClient()
+            ssh.set_missing_host_key_policy(
+                paramiko.AutoAddPolicy())
+            ssh.connect(self.access_ip, username='root', 
+                password='testpwd', look_for_keys=False)
+            _transport = ssh.get_transport()
+            while _transport.is_active():
+                time.sleep(5)
+            ssh.close()
+        except EOFError:
+            return
 
     def _wait_for_status(self, server_id, status):
         try:
