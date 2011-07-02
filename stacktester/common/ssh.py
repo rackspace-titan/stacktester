@@ -5,10 +5,6 @@ import warnings
 from stacktester import exceptions
 import stacktester.config
 
-import httplib2
-import os
-import time
-
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import paramiko
