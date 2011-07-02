@@ -13,12 +13,10 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import json
-import socket 
-import time
-import warnings
 
 from stacktester import exceptions
 from stacktester import openstack
+from stacktester.common import ssh
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -31,6 +29,7 @@ class ServerRebootActionTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.os = openstack.Manager()
+        self.ssh = ssh.Client()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
         self.ssh_timeout = self.os.config.nova.ssh_timeout
@@ -78,28 +77,11 @@ class ServerRebootActionTest(unittest.TestCase):
 
     def _get_time_started(self):
         """Return the time the server was started"""
-        ssh = self.os.get_ssh_connection(self.access_ip, 'root', 'testpwd')
+        ssh = self.ssh.get_ssh_connection(self.access_ip, 'root', 'testpwd')
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
         ssh.close()
         return time.time() - uptime
-
-    def _connect_until_closed(self):
-        """Connect to the server and wait until connection is lost"""
-        try:
-            ssh = self.os.get_ssh_connection(self.access_ip, 'root', 'testpwd')
-            _transport = ssh.get_transport()
-            _start_time = time.time()
-            while _transport.is_active() and\
-                ((time.time() - self.ssh_timeout) < _start_time):
-                time.sleep(5)
-            ssh.close()
-        except EOFError:
-            return
-        except paramiko.AuthenticationException:
-            return
-        except socket.error:
-            return
 
     def _wait_for_status(self, server_id, status):
         try:
@@ -127,7 +109,7 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self._connect_until_closed()
+        self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
         post_reboot_time_started = self._get_time_started()
         self.assertTrue(initial_time_started < post_reboot_time_started)
@@ -152,7 +134,7 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self._connect_until_closed()
+        self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
         post_reboot_time_started = self._get_time_started()
         self.assertTrue(initial_time_started < post_reboot_time_started)
