@@ -30,6 +30,7 @@ class ServerRebootActionTest(unittest.TestCase):
         self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
+        self.ssh_timeout = self.os.config.nova.ssh_timeout
 
         post_body = json.dumps({
             'server' : {
@@ -79,7 +80,7 @@ class ServerRebootActionTest(unittest.TestCase):
         ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
         ssh.connect(self.access_ip, username='root', 
-            password='testpwd', look_for_keys=False)
+            password='testpwd', look_for_keys=False, timeout=self.ssh_timeout)
 
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
@@ -94,7 +95,8 @@ class ServerRebootActionTest(unittest.TestCase):
             ssh.set_missing_host_key_policy(
                 paramiko.AutoAddPolicy())
             ssh.connect(self.access_ip, username='root', 
-                password='testpwd', look_for_keys=False)
+                password='testpwd', look_for_keys=False,
+                timeout=self.ssh_timeout)
             _transport = ssh.get_transport()
             while _transport.is_active():
                 time.sleep(5)
