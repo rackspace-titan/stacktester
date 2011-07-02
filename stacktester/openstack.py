@@ -1,4 +1,5 @@
 import time
+import socket 
 
 import stacktester.config
 import stacktester.nova
