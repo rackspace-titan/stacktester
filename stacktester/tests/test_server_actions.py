@@ -112,6 +112,8 @@ class ServerRebootActionTest(unittest.TestCase):
             ssh.close()
         except EOFError:
             return
+        except paramiko.AuthenticationException:
+            return
         except socket.error:
             return
 
