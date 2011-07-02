@@ -88,7 +88,7 @@ class ServerRebootActionTest(unittest.TestCase):
             _transport = ssh.get_transport()
             _start_time = time.time()
             while _transport.is_active() and\
-                ((time.time() - ssh_timeout) < _start_time):
+                ((time.time() - self.ssh_timeout) < _start_time):
                 time.sleep(5)
             ssh.close()
         except EOFError:
