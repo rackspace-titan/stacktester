@@ -15,11 +15,14 @@
 import json
 import socket 
 import time
+import warnings
 
 from stacktester import exceptions
 from stacktester import openstack
 
-import paramiko
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import paramiko
 import unittest2 as unittest
 
 

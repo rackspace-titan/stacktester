@@ -1,10 +1,13 @@
 import time
 import socket 
+import warnings
 
 import stacktester.config
 import stacktester.nova
 
-import paramiko
+with warnings.catch_warnings():
+    warnings.simplefilter("ignore")
+    import paramiko
 
 
 class Manager(object):
@@ -30,7 +33,8 @@ class Manager(object):
         while (time.time() - ssh_timeout) < _start_time:
             try:
                 ssh.connect(host, username=username, 
-                    password=password, look_for_keys=False)
+                    password=password, look_for_keys=False,
+                    timeout=ssh_timeout)
                 _timeout = False
                 break
             except socket.error:
