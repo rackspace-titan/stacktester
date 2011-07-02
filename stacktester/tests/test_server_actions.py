@@ -13,6 +13,7 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 import json
+import socket 
 import time
 
 from stacktester import exceptions
@@ -99,6 +100,8 @@ class ServerRebootActionTest(unittest.TestCase):
                 time.sleep(5)
             ssh.close()
         except EOFError:
+            return
+        except socket.error:
             return
 
     def _wait_for_status(self, server_id, status):
