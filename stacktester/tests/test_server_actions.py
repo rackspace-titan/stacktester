@@ -18,9 +18,6 @@ from stacktester import exceptions
 from stacktester import openstack
 from stacktester.common import ssh
 
-with warnings.catch_warnings():
-    warnings.simplefilter("ignore")
-    import paramiko
 import unittest2 as unittest
 
 
