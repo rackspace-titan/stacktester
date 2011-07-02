@@ -73,39 +73,22 @@ class ServerRebootActionTest(unittest.TestCase):
             body=delete_body)
         #self.assertEqual('204', response['status'])
 
-    def _get_ssh_connection(self, host, username, password):
-        """Returns an ssh connection to the specified host"""
-        _timeout = True
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(
-            paramiko.AutoAddPolicy())
-
-        while (time.time() - self.ssh_timeout) < time.time():
-            try:
-                ssh.connect(host, username=username, 
-                    password=password, look_for_keys=False)
-                _timeout = False
-                break
-            except socket.error:
-                continue
-        if _timeout:
-            raise socket.error("SSH connect timed out")
-        return ssh
-
     def _get_time_started(self):
         """Return the time the server was started"""
-        ssh = self._get_ssh_connection(self.access_ip, 'root', 'testpwd')
+        ssh = self.os.get_ssh_connection(self.access_ip, 'root', 'testpwd')
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
         ssh.close()
         return time.time() - uptime
 
     def _connect_until_closed(self):
-        """Return the time the server was started"""
+        """Connect to the server and wait until connection is lost"""
         try:
-            ssh = self._get_ssh_connection(self.access_ip, 'root', 'testpwd')
+            ssh = self.os.get_ssh_connection(self.access_ip, 'root', 'testpwd')
             _transport = ssh.get_transport()
-            while _transport.is_active():
+            _start_time = time.time()
+            while _transport.is_active() and
+                ((time.time() - ssh_timeout) < _start_time):
                 time.sleep(5)
             ssh.close()
         except EOFError:
