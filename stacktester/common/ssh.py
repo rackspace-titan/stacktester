@@ -3,6 +3,7 @@ import socket
 import warnings
 
 from stacktester import exceptions
+import stacktester.config
 
 import httplib2
 import os
@@ -17,22 +18,22 @@ class Client(object):
 
 
     def __init__(self, host='localhost', port=80, base_url=''):
-        pass
+        self.config = stacktester.config.StackConfig()
+        self.ssh_timeout = self.config.nova.ssh_timeout
 
     def get_ssh_connection(self, host, username, password):
         """Returns an ssh connection to the specified host"""
-        ssh_timeout = self.config.nova.ssh_timeout
         _timeout = True
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
         _start_time = time.time()
 
-        while (time.time() - ssh_timeout) < _start_time:
+        while (time.time() - self.ssh_timeout) < _start_time:
             try:
                 ssh.connect(host, username=username, 
                     password=password, look_for_keys=False,
-                    timeout=ssh_timeout)
+                    timeout=self.ssh_timeout)
                 _timeout = False
                 break
             except socket.error:
