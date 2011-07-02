@@ -21,7 +21,7 @@ class Client(object):
         self.config = stacktester.config.StackConfig()
         self.ssh_timeout = self.config.nova.ssh_timeout
 
-    def get_ssh_connection(self, host, username, password):
+    def get_ssh_connection(self, host, user, pwd):
         """Returns an ssh connection to the specified host"""
         _timeout = True
         ssh = paramiko.SSHClient()
@@ -31,8 +31,8 @@ class Client(object):
 
         while (time.time() - self.ssh_timeout) < _start_time:
             try:
-                ssh.connect(host, username=username, 
-                    password=password, look_for_keys=False,
+                ssh.connect(host, username=user, 
+                    password=pwd, look_for_keys=False,
                     timeout=self.ssh_timeout)
                 _timeout = False
                 break

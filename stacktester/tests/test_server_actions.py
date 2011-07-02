@@ -100,7 +100,9 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self.ssh.connect_until_closed()
+        self.ssh.connect_until_closed(self.access_ip, 
+                                      'root',
+                                      'testpwd')
         #ssh and verify uptime is less than before
         post_reboot_time_started = self.ssh.get_time_started(self.access_ip, 
                                                         'root',
@@ -130,7 +132,9 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self.ssh.connect_until_closed()
+        self.ssh.connect_until_closed(self.access_ip, 
+                                      'root',
+                                      'testpwd')
         #ssh and verify uptime is less than before
         post_reboot_time_started = self.ssh.get_time_started(self.access_ip, 
                                                         'root',
