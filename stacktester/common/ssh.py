@@ -41,10 +41,10 @@ class Client(object):
             raise socket.error("SSH connect timed out")
         return ssh
 
-    def connect_until_closed(self):
+    def connect_until_closed(self, host, username, password):
         """Connect to the server and wait until connection is lost"""
         try:
-            ssh = self.get_ssh_connection(self.access_ip, 'root', 'testpwd')
+            ssh = self.get_ssh_connection(host, username, password)
             _transport = ssh.get_transport()
             _start_time = time.time()
             while _transport.is_active() and\
@@ -57,3 +57,11 @@ class Client(object):
             return
         except socket.error:
             return
+
+    def get_time_started(self):
+        """Return the time the server was started"""
+        ssh = self.get_ssh_connection(host, username, password)
+        stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
+        uptime = float(stdout.read().split().pop(0))
+        ssh.close()
+        return time.time() - uptime
