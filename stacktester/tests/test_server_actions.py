@@ -116,7 +116,7 @@ class ServerRebootActionTest(unittest.TestCase):
         time.sleep(90)
         #TODO ssh and verify uptime is less than before
         post_reboot_time_started = self._get_time_started()
-        self.assertTrue(initial_uptime < post_reboot_time_started)
+        self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_reboot_server_hard(self):
         """
