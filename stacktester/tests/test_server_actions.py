@@ -86,6 +86,19 @@ class ServerRebootActionTest(unittest.TestCase):
         print time.time() - uptime
         return time.time() - uptime
 
+    def _connect_until_closed(self):
+        """Return the time the server was started"""
+        
+        ssh = paramiko.SSHClient()
+        ssh.set_missing_host_key_policy(
+            paramiko.AutoAddPolicy())
+        ssh.connect(self.access_ip, username='root', 
+            password='testpwd', look_for_keys=False)
+        _transport = ssh.get_transport()
+        while _transport.is_active():
+            time.sleep(5)
+        ssh.close()
+
     def _wait_for_status(self, server_id, status):
         try:
             self.os.nova.wait_for_server_status(server_id, status)
@@ -113,7 +126,7 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        time.sleep(90)
+        self._connect_until_closed()
         #TODO ssh and verify uptime is less than before
         post_reboot_time_started = self._get_time_started()
         self.assertTrue(initial_time_started < post_reboot_time_started)
