@@ -3,6 +3,7 @@ import logging
 import subprocess
 
 import stacktester.common.http
+from stacktester import exceptions
 
 
 class API(stacktester.common.http.Client):
@@ -42,42 +43,42 @@ class API(stacktester.common.http.Client):
 
         #TODO: use management_url
 
+    def wait_for_entity_status(self, url, entity_name, status, **kwargs):
+        """Poll the provided url until expected entity status is returned"""
+
+        def check_response(resp, body):
+            data = json.loads(body)
+            return data[entity_name]['status'] == status
+
+        try:
+            self.poll_request('GET', url, check_response, **kwargs)
+        except exceptions.TimeoutException:
+            msg = "%s failed to reach status %s" % (entity_name, status)
+            raise AssertionError(msg)
+
     def wait_for_server_status(self, server_id, status='ACTIVE', **kwargs):
         """Wait for the server status to be equal to the status passed in.
 
         :param server_id: Server ID to query.
         :param status: The status string to look for.
         :returns: None
+        :raises: AssertionError if request times out
 
         """
-        def check_response(resp, body):
-            data = json.loads(body)
-            return data['server']['status'] == status
+        url = '/servers/%s' % server_id
+        return self.wait_for_entity_status(url, 'server', status)
 
-        self.poll_request(
-            'GET',
-            '/servers/%s' % server_id,
-            check_response,
-            **kwargs)
-
-    #TODO Consider genericizing so servers/images share common code
     def wait_for_image_status(self, image_id, status='ACTIVE', **kwargs):
         """Wait for the image status to be equal to the status passed in.
 
         :param image_id: Image ID to query.
         :param status: The status string to look for.
         :returns: None
+        :raises: AssertionError if request times out
 
         """
-        def check_response(resp, body):
-            data = json.loads(body)
-            return data['image']['status'] == status
-
-        self.poll_request(
-            'GET',
-            '/images/%s' % image_id,
-            check_response,
-            **kwargs)
+        url = '/images/%s' % image_id
+        return self.wait_for_entity_status(url, 'image', status)
 
     def request(self, method, url, **kwargs):
         """Generic HTTP request on the Nova API.
