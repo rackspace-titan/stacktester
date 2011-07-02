@@ -58,7 +58,7 @@ class Client(object):
         except socket.error:
             return
 
-    def get_time_started(self):
+    def get_time_started(self, host, username, password):
         """Return the time the server was started"""
         ssh = self.get_ssh_connection(host, username, password)
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
