@@ -82,8 +82,8 @@ class ServerRebootActionTest(unittest.TestCase):
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
         ssh.close()
-        print uptime
-        return uptime
+        print time.time() - uptime
+        return time.time() - uptime
 
     def _wait_for_status(self, server_id, status):
         try:
