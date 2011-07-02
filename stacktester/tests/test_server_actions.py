@@ -75,16 +75,25 @@ class ServerRebootActionTest(unittest.TestCase):
 
     def _get_time_started(self):
         """Return the time the server was started"""
-        
+        _timeout = True
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
-        ssh.connect(self.access_ip, username='root', 
-            password='testpwd', look_for_keys=False, timeout=300)
+
+        while (time.time() - self.ssh_timeout) < time.time():
+            try:
+                ssh.connect(self.access_ip, username='root', 
+                    password='testpwd', look_for_keys=False)
+                _timeout = False
+                break
+            except socket.error:
+                continue
 
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
         ssh.close()
+        if _timeout:
+            self.fail("SSH connect timed out")
         print time.time() - uptime
         return time.time() - uptime
 
