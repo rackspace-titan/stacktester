@@ -99,7 +99,7 @@ class ServerActionsTest(unittest.TestCase):
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
-        """Rebuild a server from a different image"""
+        """Rebuild a server"""
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
