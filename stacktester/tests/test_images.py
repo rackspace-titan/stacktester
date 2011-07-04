@@ -104,23 +104,19 @@ class ImagesTest(unittest.TestCase):
         """Verify an image can be created from an existing server"""
 
         # Create server to snapshot
-        post_body = json.dumps({
-            'server' : {
-                'name' : 'testserver',
-                'imageRef' : self.os.config.env.image_ref,
-                'flavorRef' : self.os.config.env.flavor_ref
-            }
-        })
-        response, body = self.os.nova.request('POST',
-                                              '/servers',
-                                              body=post_body)
-        server = json.loads(body)['server']
+        expected_server = {
+            'name' : 'testserver',
+            'imageRef' : self.os.config.env.image_ref,
+            'flavorRef' : self.os.config.env.flavor_ref
+        }
+        server = self.os.nova.create_server(expected_server)
         self.os.nova.wait_for_server_status(server['id'], 'ACTIVE')
 
         # Create snapshot
+        server_ref = 'http://172.19.0.3:8774/v1.1/servers/%s' % server['id']
         expected_image = {
             'name' : 'backup',
-            'serverRef' : 'http://172.19.0.3:8774/v1.1/servers/%s' % server['id']
+            'serverRef' : server_ref,
         }
         snapshot = self._create_snapshot(expected_image)
         server_ref = snapshot.pop('serverRef', None)
@@ -132,24 +128,18 @@ class ImagesTest(unittest.TestCase):
 
         # Cleaning up
         self.os.nova.request('DELETE', '/images/%s' % snapshot['id'])
-        self.os.nova.request('DELETE', '/servers/%s' % server['id'])
+        self.os.nova.delete_server(server['id'])
 
     def test_snapshot_server_not_active(self):
         """Ensure inability to snapshot server in BUILD state"""
 
         # Create server to snapshot
-        post_body = json.dumps({
-            'server' : {
-                'name' : 'testserver',
-                'imageRef' : self.os.config.env.image_ref,
-                'flavorRef' : self.os.config.env.flavor_ref
-            }
-        })
-        response, body = self.os.nova.request('POST',
-                                              '/servers',
-                                              body=post_body)
-        self.assertEqual(response['status'], '200')
-        server = json.loads(body)['server']
+        expected_server = {
+            'name' : 'testserver',
+            'imageRef' : self.os.config.env.image_ref,
+            'flavorRef' : self.os.config.env.flavor_ref,
+        }
+        server = self.os.nova.create_server(expected_server)
 
         # Create snapshot
         req_body = json.dumps({
@@ -170,4 +160,4 @@ class ImagesTest(unittest.TestCase):
         self.os.nova.request('DELETE', '/images/%s' % image_id)
 
         # Cleaning up
-        self.os.nova.request('DELETE', '/servers/%s' % server['id'])
+        self.os.nova.delete_server(server['id'])
