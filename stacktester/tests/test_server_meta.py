@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import json
 
 import unittest2 as unittest
@@ -68,7 +69,7 @@ class ServersMetadataTest(unittest.TestCase):
         }
         post_body = json.dumps(post_metadata)
 
-        url = '/sirvers/%s/meta' % self.server_id
+        url = '/servers/%s/meta' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         # KNOWN-ISSUE lp:804067
         #self.assertEqual(201, response.status)
