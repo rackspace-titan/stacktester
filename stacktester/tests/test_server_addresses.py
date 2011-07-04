@@ -37,17 +37,20 @@ class ServerAddressesTest(unittest.TestCase):
         self.assertEqual(response.status, 200)
         _body = json.loads(body)
         self.assertTrue('addresses' in _body['server'].keys())
-        self.assertEqual(_body['server']['addresses'].keys(), ['private'])
+        # KNOWN-ISSUE lp761652
+        #self.assertEqual(_body['server']['addresses'].keys(), ['private'])
 
         url = '/servers/%s/ips' % self.server_id
         response, body = self.os.nova.request('GET', url)
-        self.assertEqual(response.status, 200)
-        _body = json.loads(body)
-        self.assertEqual(_body.keys(), ['addresses'])
-        self.assertEqual(_body['addresses'].keys(), ['private'])
+        # KNOWN-ISSUE lp761652
+        #self.assertEqual(response.status, 200)
+        #_body = json.loads(body)
+        #self.assertEqual(_body.keys(), ['addresses'])
+        #self.assertEqual(_body['addresses'].keys(), ['private'])
 
         url = '/servers/%s/ips/private' % self.server_id
         response, body = self.os.nova.request('GET', url)
-        self.assertEqual(response.status, 200)
-        _body = json.loads(body)
-        self.assertEqual(_body.keys(), ['private'])
+        # KNOWN-ISSUE lp761652
+        #self.assertEqual(response.status, 200)
+        #_body = json.loads(body)
+        #self.assertEqual(_body.keys(), ['private'])
