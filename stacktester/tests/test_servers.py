@@ -91,9 +91,7 @@ class ServersTest(unittest.TestCase):
         #self.assertEqual(server['links'], expected_links)
 
     def test_build_server(self):
-        """
-        Verify that a server can be built
-        """
+        """Build a server"""
 
         expected_server = {
             'name': 'testserver',
@@ -136,9 +134,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(created_server['id'])
 
     def test_delete_server_building(self):
-        """
-        Verify a building server can be deleted
-        """
+        """Delete a server while building"""
 
         server = {
             'name' : 'testserver',
@@ -171,9 +167,7 @@ class ServersTest(unittest.TestCase):
             self.fail("Server deletion timed out")
 
     def test_delete_server_active(self):
-        """
-        Verify an active server can be deleted
-        """
+        """Delete a server after fully built"""
 
         expected_server = {
             'name' : 'testserver',
@@ -202,9 +196,8 @@ class ServersTest(unittest.TestCase):
             self.fail("Server deletion timed out")
 
     def test_update_server_name(self):
-        """
-        Verify the name of an instance can be changed
-        """
+        """Change the name of a server"""
+
         expected_server = {
             'name' : 'testserver',
 
@@ -247,9 +240,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(server_id)
 
     def test_create_server_invalid_image(self):
-        """
-        Verify that creating a server with an unknown image ref will fail
-        """
+        """Verify that creating a server with an unknown image fails"""
 
         post_body = json.dumps({
             'server' : {
@@ -280,9 +271,7 @@ class ServersTest(unittest.TestCase):
         #self.assertEqual(fault, expected_fault)
 
     def test_create_server_invalid_flavor(self):
-        """
-        Verify that creating a server with an unknown flavor ref will fail
-        """
+        """Verify that creating a server with an unknown flavor fails"""
 
         post_body = json.dumps({
             'server' : {

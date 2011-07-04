@@ -22,16 +22,17 @@ from stacktester import openstack
 
 class ServersMetadataTest(unittest.TestCase):
 
-    def setUp(self):
+    @classmethod
+    def setUpClass(self):
         self.os = openstack.Manager()
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
 
-        image_ref = self.os.config.env.image_ref
-        flavor_ref = self.os.config.env.flavor_ref
-
+    def setUp(self):
         server = {
             'name' : 'testserver',
-            'imageRef' : image_ref,
-            'flavorRef' : flavor_ref,
+            'imageRef' : self.image_ref,
+            'flavorRef' : self.flavor_ref,
             'metadata' : {
                 'testEntry' : 'testValue',
             },
@@ -44,7 +45,7 @@ class ServersMetadataTest(unittest.TestCase):
         self.os.nova.delete_server(self.server_id)
 
     def test_get_server_metadata(self):
-        """Test that we can retrieve metadata for a server"""
+        """Retrieve metadata for a server"""
 
         url = '/servers/%s/meta' % self.server_id
         response, body = self.os.nova.request('GET', url)
@@ -59,7 +60,7 @@ class ServersMetadataTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
     def test_update_server_metadata(self):
-        """Test that we can update metadata for a server"""
+        """Update metadata for a server"""
 
         post_metadata = {
             'metadata' : {
@@ -85,10 +86,7 @@ class ServersMetadataTest(unittest.TestCase):
         #self.assertEqual(expected, result)
 
     def test_replace_server_metadata(self):
-        """
-        Test that we can update metadata for a server,
-        removing unspecified entries
-        """
+        """Overwrite metadata for a server"""
 
         expected = {
             'metadata' : {
@@ -113,7 +111,7 @@ class ServersMetadataTest(unittest.TestCase):
         #self.assertEqual(expected, result)
 
     def test_get_server_metadata_key(self):
-        """Test that we can retrieve specific metadata key for a server"""
+        """Retrieve specific metadata key for a server"""
 
         url = '/servers/%s/meta/testEntry' % self.server_id
         response, body = self.os.nova.request('GET', url)
@@ -129,7 +127,7 @@ class ServersMetadataTest(unittest.TestCase):
         #self.assertDictEqual(expected, result)
 
     def test_add_server_metadata_key(self):
-        """Test that we can add specific metadata key to a server"""
+        """Add specific metadata key to a server"""
 
         expected_metadata = {
             'metadata' : {
@@ -161,7 +159,7 @@ class ServersMetadataTest(unittest.TestCase):
         #self.assertDictEqual(expected_metadata, result)
 
     def test_update_server_metadata_key(self):
-        """Test that we can update specific metadata key for a server"""
+        """Update specific metadata key for a server"""
 
         expected_meta = {
             'meta' : {
@@ -187,7 +185,7 @@ class ServersMetadataTest(unittest.TestCase):
         #self.assertDictEqual(expected_metadata, result)
 
     def test_delete_server_metadata_key(self):
-        """Test that we can delete metadata for a server"""
+        """Delete metadata for a server"""
 
         url = '/servers/%s/meta/testEntry' % self.server_id
         response, body = self.os.nova.request('DELETE', url)

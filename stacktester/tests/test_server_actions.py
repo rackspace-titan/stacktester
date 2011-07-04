@@ -46,9 +46,7 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.delete_server(self.server_id)
 
     def test_reboot_server_soft(self):
-        """
-        Verify that a server can be soft-rebooted
-        """
+        """Soft-reboot a specific server"""
 
         post_body = json.dumps({
             'reboot' : {
@@ -66,9 +64,7 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
     def test_reboot_server_hard(self):
-        """
-        Verify that a server can be hard-rebooted
-        """
+        """Hard-reboot a specific server"""
 
         post_body = json.dumps({
             'reboot' : {
@@ -86,7 +82,7 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
     def test_change_server_password(self):
-        """Verify the root password of a server can be changed"""
+        """Change root password of a server"""
 
         post_body = json.dumps({
             'changePassword' : {
@@ -101,11 +97,9 @@ class ServerActionsTest(unittest.TestCase):
 
         #TODO: SSH into server using new password
 
-    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
-        """
-        Verify that a server instance can be rebuilt using a different image
-        """
+        """Rebuild a server from a different image"""
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
@@ -126,9 +120,9 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)
         self.assertEqual(2, data['server']['imageRef'])
 
-    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_confirm(self):
-        """ Verify that a server can be resized """
+        """Resize a server"""
         post_body = json.dumps({
             'resize' : {
                 'flavorRef': 2
@@ -152,9 +146,9 @@ class ServerActionsTest(unittest.TestCase):
         data = json.loads(body)
         self.assertEqual(2, data['server']['flavorRef'])
 
-    @unittest.skipIf(not multi_node, 'Test requires more than one compute node')
+    @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_revert(self):
-        """ Verify that a server resize can be reverted """
+        """Revert a server resize"""
 
         post_body = json.dumps({
             'resize' : {
