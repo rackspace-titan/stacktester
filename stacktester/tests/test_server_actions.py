@@ -52,7 +52,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertEqual('200', response['status'])
 
         #current impl
-        self.access_ip = data['addresses']['private'][0]['addr']
+        self.access_ip = server['addresses']['private'][0]['addr']
         #current Spec
         #self.access_ip = data['server']['accessIPv4']
         self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
@@ -73,7 +73,7 @@ class ServerActionsTest(unittest.TestCase):
         return time.time() - uptime
 
     def test_reboot_server_soft(self):
-        """Soft-reboot a specific server"""
+        """Verify that a server can be soft rebooted."""
 
         #ssh and get the uptime
         initial_time_started = self._get_boot_time()
@@ -95,9 +95,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_reboot_server_hard(self):
-        """
-        Verify that a server can be hard rebooted
-        """
+        """Verify that a server can be hard rebooted."""
 
         #ssh and get the uptime
         initial_time_started = self._get_boot_time()
