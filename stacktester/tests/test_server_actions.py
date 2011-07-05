@@ -48,7 +48,7 @@ class ServerActionsTest(unittest.TestCase):
                                             timeout = 300)
         
         response, body = self.os.nova.request(
-            'GET', '/servers/%s' % self.server_id, body=post_body)
+            'GET', '/servers/%s' % self.server_id)
         self.assertEqual('200', response['status'])
 
         #current impl

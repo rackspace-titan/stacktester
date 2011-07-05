@@ -2,15 +2,12 @@ import time
 import socket 
 import warnings
 
-from stacktester import exceptions
-
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
     import paramiko
 
 
 class Client(object):
-
 
     def __init__(self, host, username, password, timeout=300):
         self.host = host
