@@ -18,6 +18,7 @@ class Client(object):
     def _get_ssh_connection(self):
         """Returns an ssh connection to the specified host"""
         _timeout = True
+        _bad_auth = False
         ssh = paramiko.SSHClient()
         ssh.set_missing_host_key_policy(
             paramiko.AutoAddPolicy())
@@ -36,9 +37,9 @@ class Client(object):
                 #NOTE (ameade) If authentication fails, try again until timeout
                 # this is useful for when trying to connect after changing
                 # a password
-                bad_auth = True
+                _bad_auth = True
                 continue
-        if _timeout and bad_auth:
+        if _timeout and _bad_auth:
             raise paramiko.AuthenticationException("Authentication failed")
         if _timeout:
             raise socket.error("SSH connect timed out")
