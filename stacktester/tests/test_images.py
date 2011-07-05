@@ -65,7 +65,7 @@ class ImagesTest(unittest.TestCase):
         self._assert_image_links(image)
 
     def test_index(self):
-        """Verify images can be listed"""
+        """List all images"""
 
         response, body = self.os.nova.request('GET', '/images')
 
@@ -77,7 +77,7 @@ class ImagesTest(unittest.TestCase):
             self._assert_image_entity_basic(image)
 
     def test_detail(self):
-        """Verify images can be listed in detail"""
+        """List all images in detail"""
 
         response, body = self.os.nova.request('GET', '/images/detail')
 
@@ -101,7 +101,7 @@ class ImagesTest(unittest.TestCase):
         return data['image']
 
     def test_snapshot_active_server(self):
-        """Verify an image can be created from an existing server"""
+        """Create image from an existing server"""
 
         # Create server to snapshot
         expected_server = {
