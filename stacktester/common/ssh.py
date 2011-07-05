@@ -3,7 +3,6 @@ import socket
 import warnings
 
 from stacktester import exceptions
-import stacktester.config
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore")
@@ -14,7 +13,6 @@ class Client(object):
 
 
     def __init__(self, host, username, password, timeout=300):
-        self.ssh_timeout = self.config.nova.ssh_timeout
         self.host = host
         self.username = username
         self.password = password
@@ -60,7 +58,7 @@ class Client(object):
 
     def exec_command(self, cmd):
         ssh = self._ssh_connection()
-        stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
+        stdin, stdout, stderr = ssh.exec_command(cmd)
         ssh.close()
         return stdin, stdout, stderr
 
