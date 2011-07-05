@@ -47,8 +47,8 @@ class Client(object):
             _start_time = time.time()
             _timed_out = self._is_timed_out(self.timeout, _start_time):
             while _transport.is_active() and not _timed_out:
-                _timed_out = self._is_timed_out(self.timeout, _start_time):
                 time.sleep(5)
+                _timed_out = self._is_timed_out(self.timeout, _start_time):
             ssh.close()
         except (EOFError, paramiko.AuthenticationException, socket.error):
             return
