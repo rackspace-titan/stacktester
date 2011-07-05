@@ -32,6 +32,14 @@ class Client(object):
                 break
             except socket.error:
                 continue
+            except paramiko.AuthenticationException:
+                #NOTE (ameade) If authentication fails, try again until timeout
+                # this is useful for when trying to connect after changing
+                # a password
+                bad_auth = True
+                continue
+        if _timeout and bad_auth:
+            raise paramiko.AuthenticationException("Authentication failed")
         if _timeout:
             raise socket.error("SSH connect timed out")
         return ssh
