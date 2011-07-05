@@ -72,6 +72,6 @@ class Client(object):
         """Return the time the server was started"""
         ssh = self._ssh_connection()
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
-        ssh.close()
         uptime = float(stdout.read().split().pop(0))
+        ssh.close()
         return time.time() - uptime
