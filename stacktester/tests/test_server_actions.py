@@ -22,10 +22,11 @@ from stacktester.common import ssh
 import unittest2 as unittest
 
 
-class ServerRebootActionTest(unittest.TestCase):
+class ServerActionsTest(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
+    multi_node = openstack.Manager().config.env.multi_node
+
+    def setUp(self):
         self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
@@ -60,11 +61,11 @@ class ServerRebootActionTest(unittest.TestCase):
         #self.access_ip = data['server']['accessIPv4']
         self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
 
-    @classmethod
-    def tearDownClass(self):
+    def tearDown(self):
         response, body = self.os.nova.request(
             'DELETE',
             '/servers/%s' % self.server_id)
+        self.assertEqual('204', response['status'])
 
     def _wait_for_status(self, server_id, status):
         try:
@@ -72,7 +73,7 @@ class ServerRebootActionTest(unittest.TestCase):
         except exceptions.TimeoutException:
             self.fail("Server failed to change status to %s" % status)
 
-    def _get_time_started(self):
+    def _get_boot_time(self):
         """Return the time the server was started"""
         output = self.ssh.exec_command("cat /proc/uptime")
         uptime = float(output.split().pop(0))
@@ -84,7 +85,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
 
         #ssh and get the uptime
-        initial_time_started = self._get_time_started()
+        initial_time_started = self._get_boot_time()
 
         post_body = json.dumps({
             'reboot' : {
@@ -98,7 +99,7 @@ class ServerRebootActionTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self._get_time_started()
+        post_reboot_time_started = self._get_boot_time()
 
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
@@ -108,7 +109,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
 
         #ssh and get the uptime
-        initial_time_started = self._get_time_started()
+        initial_time_started = self._get_boot_time()
 
         post_body = json.dumps({
             'reboot' : {
@@ -122,54 +123,9 @@ class ServerRebootActionTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self._get_time_started()
+        post_reboot_time_started = self._get_boot_time()
 
         self.assertTrue(initial_time_started < post_reboot_time_started)
-
-
-class ServerActionsTest(unittest.TestCase):
-
-    multi_node = openstack.Manager().config.env.multi_node
-
-    @classmethod
-    def setUpClass(self):
-        self.os = openstack.Manager()
-        self.image_ref = self.os.config.env.image_ref
-        self.flavor_ref = self.os.config.env.flavor_ref
-
-        post_body = json.dumps({
-            'server' : {
-                'name' : 'testserver',
-                'imageRef' : self.image_ref,
-                'flavorRef' : self.flavor_ref,
-                'adminPass' : "testpwd",
-            }
-        })
-
-        response, body = self.os.nova.request(
-            'POST', '/servers', body=post_body)
-        # KNOWN-ISSUE lp802621
-        #self.assertEqual('202', response['status'])
-
-        data = json.loads(body)
-
-        self.server_id = data['server']['id']
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-
-    @classmethod
-    def tearDownClass(self):
-        delete_body = json.dumps({
-            'server' : {
-                'name' : 'testserver',
-                'imageRef' : self.image_ref,
-                'flavorRef' : self.flavor_ref,
-            }
-        })
-        response, body = self.os.nova.request(
-            'DELETE',
-            '/servers/%s' % self.server_id,
-            body=delete_body)
-        #self.assertEqual('204', response['status'])
 
     def test_change_server_password(self):
         """Verify the root password of a server can be changed"""
