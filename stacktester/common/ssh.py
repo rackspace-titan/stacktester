@@ -64,3 +64,13 @@ class Client(object):
         output = stdout.read()
         ssh.close()
         return output
+
+    def test_connection_auth(self):
+        """ Returns true if ssh can connect to server"""
+        try:
+            connection = self._get_ssh_connection()
+            connection.close()
+        except paramiko.AuthenticationException:
+            return False
+
+        return True

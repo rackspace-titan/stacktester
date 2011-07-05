@@ -131,7 +131,9 @@ class ServerActionsTest(unittest.TestCase):
         self.assertEqual('202', response['status'])
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
-        #TODO: SSH into server using new password
+        #SSH into server using new password
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'test123', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
