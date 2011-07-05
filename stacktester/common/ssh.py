@@ -13,11 +13,15 @@ with warnings.catch_warnings():
 class Client(object):
 
 
-    def __init__(self, host='localhost', port=80, base_url=''):
+    def __init__(self, host, username, password, timeout=300):
         self.config = stacktester.config.StackConfig()
         self.ssh_timeout = self.config.nova.ssh_timeout
+        self.host = host
+        self.username = username
+        self.password = password
+        self.timeout = timeout
 
-    def get_ssh_connection(self, host, user, pwd):
+    def _ssh_connection(self):
         """Returns an ssh connection to the specified host"""
         _timeout = True
         ssh = paramiko.SSHClient()
@@ -27,9 +31,9 @@ class Client(object):
 
         while (time.time() - self.ssh_timeout) < _start_time:
             try:
-                ssh.connect(host, username=user, 
-                    password=pwd, look_for_keys=False,
-                    timeout=self.ssh_timeout)
+                ssh.connect(self.host, username=self.username, 
+                    password=self.password, look_for_keys=False,
+                    timeout=self.timeout)
                 _timeout = False
                 break
             except socket.error:
@@ -38,10 +42,10 @@ class Client(object):
             raise socket.error("SSH connect timed out")
         return ssh
 
-    def connect_until_closed(self, host, username, password):
+    def connect_until_closed(self):
         """Connect to the server and wait until connection is lost"""
         try:
-            ssh = self.get_ssh_connection(host, username, password)
+            ssh = self._ssh_connection()
             _transport = ssh.get_transport()
             _start_time = time.time()
             while _transport.is_active() and\
@@ -55,9 +59,9 @@ class Client(object):
         except socket.error:
             return
 
-    def get_time_started(self, host, username, password):
+    def get_time_started(self):
         """Return the time the server was started"""
-        ssh = self.get_ssh_connection(host, username, password)
+        ssh = self._ssh_connection()
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         uptime = float(stdout.read().split().pop(0))
         ssh.close()

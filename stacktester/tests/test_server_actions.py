@@ -26,7 +26,6 @@ class ServerRebootActionTest(unittest.TestCase):
     @classmethod
     def setUpClass(self):
         self.os = openstack.Manager()
-        self.ssh = ssh.Client()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
         self.ssh_timeout = self.os.config.nova.ssh_timeout
@@ -56,6 +55,7 @@ class ServerRebootActionTest(unittest.TestCase):
         self.access_ip = data['server']['addresses']['private'][0]['addr']
         #current Spec
         #self.access_ip = data['server']['accessIPv4']
+        self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
 
     @classmethod
     def tearDownClass(self):
@@ -84,10 +84,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
 
         #ssh and get the uptime
-        initial_time_started = self.ssh.get_time_started(self.access_ip, 
-                                                        'root',
-                                                        'testpwd')
-
+        initial_time_started = self.ssh.get_time_started()
 
         post_body = json.dumps({
             'reboot' : {
@@ -100,13 +97,9 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self.ssh.connect_until_closed(self.access_ip, 
-                                      'root',
-                                      'testpwd')
+        self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self.ssh.get_time_started(self.access_ip, 
-                                                        'root',
-                                                        'testpwd')
+        post_reboot_time_started = self.ssh.get_time_started()
 
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
@@ -116,10 +109,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
 
         #ssh and get the uptime
-        initial_time_started = self.ssh.get_time_started(self.access_ip, 
-                                                        'root',
-                                                        'testpwd')
-
+        initial_time_started = self.ssh.get_time_started()
 
         post_body = json.dumps({
             'reboot' : {
@@ -132,13 +122,10 @@ class ServerRebootActionTest(unittest.TestCase):
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
-        self.ssh.connect_until_closed(self.access_ip, 
-                                      'root',
-                                      'testpwd')
+        self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self.ssh.get_time_started(self.access_ip, 
-                                                        'root',
-                                                        'testpwd')
+        post_reboot_time_started = self.ssh.get_time_started()
+
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
 
