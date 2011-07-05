@@ -12,6 +12,7 @@
 #    WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 #    License for the specific language governing permissions and limitations
 #    under the License.
+
 import json
 import os
 
@@ -89,25 +90,8 @@ class ServersTest(unittest.TestCase):
         # KNOWN-ISSUE lp803505
         #self.assertEqual(server['links'], expected_links)
 
-    def _create_server(self, entity):
-        post_body = json.dumps({
-            'server': entity,
-        })
-
-        resp, body = self.os.nova.request('POST', '/servers', body=post_body)
-
-        # KNOWN-ISSUE lp796742
-        #self.assertEqual(202, resp.status)
-        self.assertEqual(200, resp.status)
-
-        data = json.loads(body)
-        self.assertEqual(data.keys(), ['server'])
-        return data['server']
-
     def test_build_server(self):
-        """
-        Verify that a server can be built
-        """
+        """Build a server"""
 
         expected_server = {
             'name': 'testserver',
@@ -126,31 +110,33 @@ class ServersTest(unittest.TestCase):
             'flavorRef': self.flavor_ref,
         }
 
-        created_server = self._create_server(expected_server)
+        post_body = json.dumps({'server': expected_server})
+        response, body = self.os.nova.request('POST',
+                                              '/servers',
+                                              body=post_body)
+        # KNOWN-ISSUE
+        #self.assertEqual(response.status, 202)
+        self.assertEqual(response.status, 200)
+
+        _body = json.loads(body)
+        self.assertEqual(_body.keys(), ['server'])
+        created_server = _body['server']
+
         admin_pass = created_server.pop('adminPass', None)
         self._assert_server_entity(created_server)
-
         self.assertEqual(expected_server['name'], created_server['name'])
-
         self.assertEqual(expected_server['adminPass'], admin_pass)
-
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        try:
-            self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
-        except exceptions.TimeoutException:
-            self.fail("Server creation timed out.")
+        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
 
-        url = '/servers/%s' % created_server['id']
-        self.os.nova.request('DELETE', url)
+        self.os.nova.delete_server(created_server['id'])
 
     def test_delete_server_building(self):
-        """
-        Verify a building server can be deleted
-        """
+        """Delete a server while building"""
 
-        expected_server = {
+        server = {
             'name' : 'testserver',
 
             #KNOWN-ISSUE - maybe spec will drop this requirement?
@@ -162,16 +148,16 @@ class ServersTest(unittest.TestCase):
             'flavorRef' : self.flavor_ref,
         }
 
-        # Create server
-        created_server = self._create_server(expected_server)
+        created_server = self.os.nova.create_server(server)
 
-        # Immediately delete server
+        # Server should immediately be accessible and building
         url = '/servers/%s' % created_server['id']
-        response, body = self.os.nova.request('DELETE', url)
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(response['status'], '200')
+        resp_server = json.loads(body)['server']
+        self.assertEqual(resp_server['status'], 'BUILD')
 
-        # KNOWN-ISSUE lp804087
-        #self.assertEqual(204, response.status)
-        self.assertEqual(202, response.status)
+        self.os.nova.delete_server(created_server['id'])
 
         # Poll server until deleted
         try:
@@ -180,11 +166,8 @@ class ServersTest(unittest.TestCase):
         except exceptions.TimeoutException:
             self.fail("Server deletion timed out")
 
-
     def test_delete_server_active(self):
-        """
-        Verify an active server can be deleted
-        """
+        """Delete a server after fully built"""
 
         expected_server = {
             'name' : 'testserver',
@@ -198,34 +181,23 @@ class ServersTest(unittest.TestCase):
             'flavorRef' : self.flavor_ref,
         }
 
-        # Create server
-        created_server = self._create_server(expected_server)
+        created_server = self.os.nova.create_server(expected_server)
+        server_id = created_server['id']
 
-        # Poll for server to become active
-        try:
-            self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
-        except exceptions.TimeoutException:
-            self.fail("Server creation timed out.")
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
-        # Delete server
-        url = '/servers/%s' % created_server['id']
-        response, body = self.os.nova.request('DELETE', url)
-
-        # KNOWN-ISSUE lp804087
-        #self.assertEqual(204, response.status)
-        self.assertEqual(202, response.status)
+        self.os.nova.delete_server(server_id)
 
         # Poll server until deleted
         try:
-            url = '/servers/%s' % created_server['id']
+            url = '/servers/%s' % server_id
             self.os.nova.poll_request_status('GET', url, 404)
         except exceptions.TimeoutException:
             self.fail("Server deletion timed out")
 
     def test_update_server_name(self):
-        """
-        Verify the name of an instance can be changed
-        """
+        """Change the name of a server"""
+
         expected_server = {
             'name' : 'testserver',
 
@@ -238,16 +210,13 @@ class ServersTest(unittest.TestCase):
             'flavorRef' : self.flavor_ref,
         }
 
-        # Create Server
-        created_server = self._create_server(expected_server)
+        created_server = self.os.nova.create_server(expected_server)
+
         self.assertTrue(expected_server['name'], created_server['name'])
         server_id = created_server['id']
 
-        # Wait for it to be created
-        try:
-            self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
-        except exceptions.TimeoutException:
-            self.fail("Server creation timed out.")
+        # Wait for it to be built
+        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
 
         # Update name
         new_server = {'name': 'updatedtestserver'}
@@ -268,14 +237,10 @@ class ServersTest(unittest.TestCase):
         self._assert_server_entity(data['server'])
         self.assertEqual('updatedtestserver', data['server']['name'])
 
-        # Delete Server (cleanup)
-        url = '/servers/%s' % created_server['id']
-        response, body = self.os.nova.request('DELETE', url)
+        self.os.nova.delete_server(server_id)
 
     def test_create_server_invalid_image(self):
-        """
-        Verify that creating a server with an unknown image ref will fail
-        """
+        """Verify that creating a server with an unknown image fails"""
 
         post_body = json.dumps({
             'server' : {
@@ -306,9 +271,7 @@ class ServersTest(unittest.TestCase):
         #self.assertEqual(fault, expected_fault)
 
     def test_create_server_invalid_flavor(self):
-        """
-        Verify that creating a server with an unknown flavor ref will fail
-        """
+        """Verify that creating a server with an unknown flavor fails"""
 
         post_body = json.dumps({
             'server' : {

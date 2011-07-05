@@ -71,9 +71,7 @@ class FlavorsTest(unittest.TestCase):
         #self.assertEqual(actual_links, expected_links)
 
     def test_show_flavor(self):
-        """
-        Verify the expected details are returned for a flavor
-        """
+        """Retrieve a single flavor"""
 
         flavors = self._index_flavors()
 
@@ -82,9 +80,7 @@ class FlavorsTest(unittest.TestCase):
             self._assert_flavor_entity_detailed(detailed_flavor)
 
     def test_index_flavors_basic(self):
-        """
-        Verify the expected flavors are returned
-        """
+        """List all flavors"""
 
         flavors = self._index_flavors()
 
@@ -92,9 +88,7 @@ class FlavorsTest(unittest.TestCase):
             self._assert_flavor_entity_basic(flavor)
 
     def test_index_flavors_detailed(self):
-        """
-        Verify the detailed expected flavors are returned
-        """
+        """List all flavors in detail"""
 
         url = '/flavors/detail'
         response, body = self.os.nova.request('GET', url)

@@ -43,7 +43,7 @@ class API(stacktester.common.http.Client):
 
         #TODO: use management_url
 
-    def wait_for_entity_status(self, url, entity_name, status, **kwargs):
+    def _wait_for_entity_status(self, url, entity_name, status, **kwargs):
         """Poll the provided url until expected entity status is returned"""
 
         def check_response(resp, body):
@@ -93,3 +93,32 @@ class API(stacktester.common.http.Client):
         headers['X-Auth-Token'] = self.authenticate(self.user, self.api_key)
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
+
+    def create_server(self, entity):
+        """Attempt to create a new server.
+
+        :param entity: dict of server attributes
+        :returns: dict of server attributes after creation
+        :raises: AssertionError if server creation fails
+
+        """
+        post_body = json.dumps({
+            'server': entity,
+        })
+
+        resp, body = self.request('POST', '/servers', body=post_body)
+        try:
+            data = json.loads(body)
+            return data['server']
+        except Exception:
+            raise AssertionError("Failed to create server")
+
+    def delete_server(self, server_id):
+        """Attempt to delete a server.
+
+        :param server_id: server identifier
+        :returns: None
+
+        """
+        url = '/servers/%s' % server_id
+        response, body = self.request('DELETE', url)
