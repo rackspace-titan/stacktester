@@ -51,10 +51,11 @@ class ServerActionsTest(unittest.TestCase):
             'GET', '/servers/%s' % self.server_id)
         self.assertEqual('200', response['status'])
 
+        data = json.loads(body)
         #current impl
-        self.access_ip = server['addresses']['private'][0]['addr']
+        self.access_ip = data['server']['addresses']['private'][0]['addr']
         #current Spec
-        #self.access_ip = data['server']['accessIPv4']
+        #self.access_ip = server['accessIPv4']
         self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
 
     def tearDown(self):
