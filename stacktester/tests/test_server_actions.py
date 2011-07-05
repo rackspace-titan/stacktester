@@ -70,13 +70,19 @@ class ServerRebootActionTest(unittest.TestCase):
         except exceptions.TimeoutException:
             self.fail("Server failed to change status to %s" % status)
 
+    def _get_time_started(self):
+        """Return the time the server was started"""
+        output = self.ssh.exec_command("cat /proc/uptime")
+        uptime = float(output.split().pop(0))
+        return time.time() - uptime
+
     def test_reboot_server(self):
         """
         Verify that a server can be rebooted
         """
 
         #ssh and get the uptime
-        initial_time_started = self.ssh.get_time_started()
+        initial_time_started = self._get_time_started()
 
         post_body = json.dumps({
             'reboot' : {
@@ -84,14 +90,13 @@ class ServerRebootActionTest(unittest.TestCase):
             }
         })
 
-
         response, body = self.os.nova.request(
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self.ssh.get_time_started()
+        post_reboot_time_started = self._get_time_started()
 
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
@@ -101,7 +106,7 @@ class ServerRebootActionTest(unittest.TestCase):
         """
 
         #ssh and get the uptime
-        initial_time_started = self.ssh.get_time_started()
+        initial_time_started = self._get_time_started()
 
         post_body = json.dumps({
             'reboot' : {
@@ -109,14 +114,13 @@ class ServerRebootActionTest(unittest.TestCase):
             }
         })
 
-
         response, body = self.os.nova.request(
             'POST', "/servers/%s/action" % self.server_id, body=post_body)
         self.assertEqual(response['status'], '202')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
         self.ssh.connect_until_closed()
         #ssh and verify uptime is less than before
-        post_reboot_time_started = self.ssh.get_time_started()
+        post_reboot_time_started = self._get_time_started()
 
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
