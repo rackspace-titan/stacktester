@@ -133,7 +133,7 @@ class ServerActionsTest(unittest.TestCase):
 
         #SSH into server using new password
         new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'test123', 180)
-        self.assertTrue(new_pwd_ssh_client.test_connection())
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
