@@ -57,6 +57,12 @@ class Client(object):
             return
 
     def exec_command(self, cmd):
+        """Execute the specified command on the server.
+
+        :returns: stdin, stdout, stderr
+
+        """
+
         ssh = self._ssh_connection()
         stdin, stdout, stderr = ssh.exec_command(cmd)
         ssh.close()
@@ -64,6 +70,8 @@ class Client(object):
 
     def get_time_started(self):
         """Return the time the server was started"""
-        stdin, stdout, stderr = self.exec_command("cat /proc/uptime")
+        ssh = self._ssh_connection()
+        stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
+        ssh.close()
         uptime = float(stdout.read().split().pop(0))
         return time.time() - uptime
