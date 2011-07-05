@@ -14,7 +14,6 @@ class Client(object):
 
 
     def __init__(self, host, username, password, timeout=300):
-        self.config = stacktester.config.StackConfig()
         self.ssh_timeout = self.config.nova.ssh_timeout
         self.host = host
         self.username = username
@@ -63,7 +62,7 @@ class Client(object):
         ssh = self._ssh_connection()
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
         ssh.close()
-        return (stdin, stdout, stderr)
+        return stdin, stdout, stderr
 
     def get_time_started(self):
         """Return the time the server was started"""

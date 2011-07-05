@@ -48,6 +48,7 @@ class ServerRebootActionTest(unittest.TestCase):
         
         response, body = self.os.nova.request(
             'GET', '/servers/%s' % self.server_id, body=post_body)
+        # KNOWN-ISSUE
         #self.assertEqual('200', response['status'])
 
         data = json.loads(body)
@@ -59,18 +60,9 @@ class ServerRebootActionTest(unittest.TestCase):
 
     @classmethod
     def tearDownClass(self):
-        delete_body = json.dumps({
-            'server' : {
-                'name' : 'testserver',
-                'imageRef' : self.image_ref,
-                'flavorRef' : self.flavor_ref,
-            }
-        })
         response, body = self.os.nova.request(
             'DELETE',
-            '/servers/%s' % self.server_id,
-            body=delete_body)
-        #self.assertEqual('204', response['status'])
+            '/servers/%s' % self.server_id)
 
     def _wait_for_status(self, server_id, status):
         try:
