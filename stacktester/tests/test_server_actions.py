@@ -45,7 +45,8 @@ class ServerRebootActionTest(unittest.TestCase):
         data = json.loads(body)
 
         self.server_id = data['server']['id']
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE',
+                                            timeout = 300)
         
         response, body = self.os.nova.request(
             'GET', '/servers/%s' % self.server_id, body=post_body)

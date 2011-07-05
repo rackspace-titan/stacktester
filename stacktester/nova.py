@@ -66,7 +66,7 @@ class API(stacktester.common.http.Client):
 
         """
         url = '/servers/%s' % server_id
-        return self.wait_for_entity_status(url, 'server', status)
+        return self.wait_for_entity_status(url, 'server', status, **kwargs)
 
     def wait_for_image_status(self, image_id, status='ACTIVE', **kwargs):
         """Wait for the image status to be equal to the status passed in.
@@ -78,7 +78,7 @@ class API(stacktester.common.http.Client):
 
         """
         url = '/images/%s' % image_id
-        return self.wait_for_entity_status(url, 'image', status)
+        return self.wait_for_entity_status(url, 'image', status, **kwargs)
 
     def request(self, method, url, **kwargs):
         """Generic HTTP request on the Nova API.
