@@ -29,7 +29,7 @@ class Client(object):
             paramiko.AutoAddPolicy())
         _start_time = time.time()
 
-        while (time.time() - self.ssh_timeout) < _start_time:
+        while (time.time() - self.timeout) < _start_time:
             try:
                 ssh.connect(self.host, username=self.username, 
                     password=self.password, look_for_keys=False,
@@ -49,7 +49,7 @@ class Client(object):
             _transport = ssh.get_transport()
             _start_time = time.time()
             while _transport.is_active() and\
-                ((time.time() - self.ssh_timeout) < _start_time):
+                ((time.time() - self.timeout) < _start_time):
                 time.sleep(5)
             ssh.close()
         except EOFError:
@@ -59,10 +59,14 @@ class Client(object):
         except socket.error:
             return
 
-    def get_time_started(self):
-        """Return the time the server was started"""
+    def exec_command(self, cmd):
         ssh = self._ssh_connection()
         stdin, stdout, stderr = ssh.exec_command("cat /proc/uptime")
-        uptime = float(stdout.read().split().pop(0))
         ssh.close()
+        return (stdin, stdout, stderr)
+
+    def get_time_started(self):
+        """Return the time the server was started"""
+        stdin, stdout, stderr = self.exec_command("cat /proc/uptime")
+        uptime = float(stdout.read().split().pop(0))
         return time.time() - uptime
