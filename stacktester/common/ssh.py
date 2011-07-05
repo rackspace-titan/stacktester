@@ -23,7 +23,7 @@ class Client(object):
             paramiko.AutoAddPolicy())
         _start_time = time.time()
 
-        while (time.time() - self.timeout) < _start_time:
+        while self._is_timed_out(self.timeout, _start_time):
             try:
                 ssh.connect(self.host, username=self.username, 
                     password=self.password, look_for_keys=False,
