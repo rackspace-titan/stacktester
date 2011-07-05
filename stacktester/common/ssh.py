@@ -37,7 +37,7 @@ class Client(object):
         return ssh
 
     def _is_timed_out(self, timeout, start_time):
-        return (time.time() - timeout) < start_time
+        return (time.time() - timeout) > start_time
 
     def connect_until_closed(self):
         """Connect to the server and wait until connection is lost"""
@@ -45,8 +45,9 @@ class Client(object):
             ssh = self._get_ssh_connection()
             _transport = ssh.get_transport()
             _start_time = time.time()
-            while _transport.is_active() and \
-                self._is_timed_out(self.timeout, _start_time):
+            _timed_out = self._is_timed_out(self.timeout, _start_time):
+            while _transport.is_active() and not _timed_out:
+                _timed_out = self._is_timed_out(self.timeout, _start_time):
                 time.sleep(5)
             ssh.close()
         except (EOFError, paramiko.AuthenticationException, socket.error):
