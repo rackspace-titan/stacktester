@@ -39,6 +39,11 @@ class NovaConfig(object):
         """API key to use when authenticating. Defaults to 'admin_key'."""
         return self.get("api_key", "admin_key")
 
+    @property
+    def ssh_timeout(self):
+        """Timeout in seconds to use when connecting via ssh."""
+        return float(self.get("ssh_timeout", 300))
+
 class EnvironmentConfig(object):
     def __init__(self, conf):
         """Initialize a Environment-specific configuration object."""

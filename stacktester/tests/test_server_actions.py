@@ -14,9 +14,11 @@
 #    under the License.
 
 import json
+import time
 
 from stacktester import exceptions
 from stacktester import openstack
+from stacktester.common import ssh
 
 import unittest2 as unittest
 
@@ -30,23 +32,52 @@ class ServerActionsTest(unittest.TestCase):
 
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
+        self.ssh_timeout = self.os.config.nova.ssh_timeout
 
         expected_server = {
             'name' : 'testserver',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
+            'adminPass' : "testpwd",
         }
 
         server = self.os.nova.create_server(expected_server)
 
         self.server_id = server['id']
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE',
+                                            timeout=300)
+
+        response, body = self.os.nova.request(
+            'GET', '/servers/%s' % self.server_id)
+        self.assertEqual('200', response['status'])
+
+        data = json.loads(body)
+        #current impl
+        self.access_ip = data['server']['addresses']['private'][0]['addr']
+        #current Spec
+        #self.access_ip = server['accessIPv4']
+        self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
 
     def tearDown(self):
         self.os.nova.delete_server(self.server_id)
 
+    def _wait_for_status(self, server_id, status):
+        try:
+            self.os.nova.wait_for_server_status(server_id, status)
+        except exceptions.TimeoutException:
+            self.fail("Server failed to change status to %s" % status)
+
+    def _get_boot_time(self):
+        """Return the time the server was started"""
+        output = self.ssh.exec_command("cat /proc/uptime")
+        uptime = float(output.split().pop(0))
+        return time.time() - uptime
+
     def test_reboot_server_soft(self):
-        """Soft-reboot a specific server"""
+        """Verify that a server can be soft rebooted."""
+
+        #ssh and get the uptime
+        initial_time_started = self._get_boot_time()
 
         post_body = json.dumps({
             'reboot' : {
@@ -57,14 +88,18 @@ class ServerActionsTest(unittest.TestCase):
         url = "/servers/%s/action" % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(response['status'], '202')
-
-        #verify state change
-        # KNOWN-ISSUE lp?
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self.ssh.connect_until_closed()
+        #ssh and verify uptime is less than before
+        post_reboot_time_started = self._get_boot_time()
+
+        self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_reboot_server_hard(self):
-        """Hard-reboot a specific server"""
+        """Verify that a server can be hard rebooted."""
+
+        #ssh and get the uptime
+        initial_time_started = self._get_boot_time()
 
         post_body = json.dumps({
             'reboot' : {
@@ -75,11 +110,12 @@ class ServerActionsTest(unittest.TestCase):
         url = "/servers/%s/action" % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(response['status'], '202')
-
-        #verify state change
-        # KNOWN-ISSUE lp?
-        #self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self.ssh.connect_until_closed()
+        #ssh and verify uptime is less than before
+        post_reboot_time_started = self._get_boot_time()
+
+        self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_change_server_password(self):
         """Change root password of a server"""
