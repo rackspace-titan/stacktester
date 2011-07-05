@@ -15,7 +15,7 @@ class Client(object):
         self.password = password
         self.timeout = timeout
 
-    def _ssh_connection(self):
+    def _get_ssh_connection(self):
         """Returns an ssh connection to the specified host"""
         _timeout = True
         ssh = paramiko.SSHClient()
@@ -39,7 +39,7 @@ class Client(object):
     def connect_until_closed(self):
         """Connect to the server and wait until connection is lost"""
         try:
-            ssh = self._ssh_connection()
+            ssh = self._get_ssh_connection()
             _transport = ssh.get_transport()
             _start_time = time.time()
             while _transport.is_active() and\
@@ -60,7 +60,7 @@ class Client(object):
 
         """
 
-        ssh = self._ssh_connection()
+        ssh = self._get_ssh_connection()
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read()
         ssh.close()
