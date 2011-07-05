@@ -36,21 +36,20 @@ class Client(object):
             raise socket.error("SSH connect timed out")
         return ssh
 
+    def _is_timed_out(self, timeout, start_time):
+        return (time.time() - timeout) < start_time
+
     def connect_until_closed(self):
         """Connect to the server and wait until connection is lost"""
         try:
             ssh = self._get_ssh_connection()
             _transport = ssh.get_transport()
             _start_time = time.time()
-            while _transport.is_active() and\
-                ((time.time() - self.timeout) < _start_time):
+            while _transport.is_active() and \
+                self._is_timed_out(self.timeout, _start_time):
                 time.sleep(5)
             ssh.close()
-        except EOFError:
-            return
-        except paramiko.AuthenticationException:
-            return
-        except socket.error:
+        except (EOFError, paramiko.AuthenticationException, socket.error):
             return
 
     def exec_command(self, cmd):
@@ -59,7 +58,6 @@ class Client(object):
         :returns: data read from standard output of the command
 
         """
-
         ssh = self._get_ssh_connection()
         stdin, stdout, stderr = ssh.exec_command(cmd)
         output = stdout.read()
