@@ -32,6 +32,9 @@ class Client(object):
                 break
             except socket.error:
                 continue
+            except paramiko.AuthenticationException:
+                time.sleep(15)
+                continue
         if _timeout:
             raise socket.error("SSH connect timed out")
         return ssh
