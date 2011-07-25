@@ -39,7 +39,7 @@ class ServerActionsTest(unittest.TestCase):
 
         data = json.loads(body)
         #current impl
-        self.access_ip = data['server']['addresses']['private'][0]['addr']
+        self.access_ip = data['server']['addresses']['public'][0]['addr']
         #current Spec
         #self.access_ip = server['accessIPv4']
         self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
