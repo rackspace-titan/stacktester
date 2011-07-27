@@ -39,7 +39,7 @@ class ServerActionsTest(unittest.TestCase):
 
         data = json.loads(body)
         #current impl
-        self.access_ip = data['server']['addresses']['private'][0]['addr']
+        self.access_ip = data['server']['addresses']['public'][0]['addr']
         #current Spec
         #self.access_ip = server['accessIPv4']
         self.ssh = ssh.Client(self.access_ip, 'root', 'testpwd', 300)
@@ -120,6 +120,19 @@ class ServerActionsTest(unittest.TestCase):
         #SSH into server using new password
         new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'test123', 180)
         self.assertTrue(new_pwd_ssh_client.test_connection_auth())
+        
+        #Revert password change
+        post_body = json.dumps({
+            'changePassword' : {
+                'adminPass' : 'testpwd'
+            }
+        })
+        url = '/servers/%s/action' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=post_body)
+        
+        #SSH into server using original
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'testpwd', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
@@ -129,6 +142,7 @@ class ServerActionsTest(unittest.TestCase):
                 'name' : 'testserver',
                 'imageRef' : 2,
                 'flavorRef' : self.flavor_ref,
+                'adminPass' : "testpwd",
             }
         })
 
@@ -143,6 +157,10 @@ class ServerActionsTest(unittest.TestCase):
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)
         self.assertEqual(2, data['server']['imageRef'])
+        
+        #SSH into the server
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'testpwd', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_confirm(self):
@@ -169,6 +187,10 @@ class ServerActionsTest(unittest.TestCase):
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)
         self.assertEqual(2, data['server']['flavorRef'])
+        
+        #SSH into the server
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'testpwd', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_revert(self):
@@ -196,3 +218,7 @@ class ServerActionsTest(unittest.TestCase):
         resp, body = self.os.nova.request('GET', '/servers/%s' % self.server_id)
         data = json.loads(body)
         self.assertEqual(self.flavor_ref, data['server']['flavorRef'])
+        
+        #SSH into the server
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'testpwd', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())

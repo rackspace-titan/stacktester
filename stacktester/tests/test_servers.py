@@ -43,12 +43,7 @@ class ServersTest(unittest.TestCase):
             #KNOWN-ISSUE
             #'progress',
 
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'image',
             'imageRef',
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'flavor',
             'flavorRef',
         ))
         self.assertEqual(actual_keys, expected_keys)
@@ -85,14 +80,14 @@ class ServersTest(unittest.TestCase):
                 'key1': 'value1',
                 'key2': 'value2',
             },
+            'personality' : [
+                {
+                    'path' : '/etc/test.txt'
+                    'contents' : 'VGVzdGluZyB0ZXN0aW5n'
+                }
+            ]
             'adminPass': 'my_password',
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'image': {'id': self.image_ref},
             'imageRef': self.image_ref,
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'flavor': {'id': self.flavor_ref},
             'flavorRef': self.flavor_ref,
         }
 
@@ -124,13 +119,7 @@ class ServersTest(unittest.TestCase):
 
         server = {
             'name' : 'testserver',
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'image': {'id': self.image_ref},
             'imageRef' : self.image_ref,
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'flavor': {'id': self.flavor_ref},
             'flavorRef' : self.flavor_ref,
         }
 
@@ -157,13 +146,7 @@ class ServersTest(unittest.TestCase):
 
         expected_server = {
             'name' : 'testserver',
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'image': {'id': self.image_ref},
             'imageRef' : self.image_ref,
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'flavor': {'id': self.flavor_ref},
             'flavorRef' : self.flavor_ref,
         }
 
@@ -186,13 +169,7 @@ class ServersTest(unittest.TestCase):
 
         expected_server = {
             'name' : 'testserver',
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'image': {'id': self.image_ref},
             'imageRef' : self.image_ref,
-
-            #KNOWN-ISSUE - maybe spec will drop this requirement?
-            #'flavor': {'id': self.flavor_ref},
             'flavorRef' : self.flavor_ref,
         }
 
@@ -231,13 +208,7 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-
-                # KNOWN-ISSUE
-                #'image': {'id': self.image_ref},
                 'imageRef' : -1,
-
-                # KNOWN-ISSUE
-                #'flavor': {'id': self.flavor_ref},
                 'flavorRef' : self.flavor_ref,
             }
         })
@@ -262,13 +233,7 @@ class ServersTest(unittest.TestCase):
         post_body = json.dumps({
             'server' : {
                 'name' : 'testserver',
-
-                # KNOWN-ISSUE
-                #'image': {'id': self.image_ref},
                 'imageRef' : self.image_ref,
-
-                # KNOWN-ISSUE
-                #'flavor': {'id': self.flavor_ref},
                 'flavorRef' : -1,
             }
         })
