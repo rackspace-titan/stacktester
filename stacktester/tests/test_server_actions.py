@@ -129,6 +129,10 @@ class ServerActionsTest(unittest.TestCase):
         })
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
+        
+        #SSH into server using original
+        new_pwd_ssh_client = ssh.Client(self.access_ip, 'root', 'testpwd', 180)
+        self.assertTrue(new_pwd_ssh_client.test_connection_auth())
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_rebuild_server(self):
