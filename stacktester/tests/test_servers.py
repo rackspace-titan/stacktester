@@ -112,10 +112,12 @@ class ServersTest(unittest.TestCase):
 
         self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
 
+        server = self.os.nova.get_sever(created_server['id'])
+
         # Assert password was set to that in request
         try:
-            (_, network) = created_server['addresses'].popitem()
-            ip = network['addr']
+            (_, network) = server['addresses'].popitem()
+            ip = network[0]['addr']
         except KeyError:
             self.fail("Failed to get access ip")
         client = ssh.Client(ip, 'root', 'my_password', self.ssh_timeout)
@@ -126,7 +128,7 @@ class ServersTest(unittest.TestCase):
         injected_file = client.exec_command('cat /etc/test.txt')
         self.assertEqual(injected_file, file_contents)
 
-        self.os.nova.delete_server(created_server['id'])
+        self.os.nova.delete_server(server['id'])
 
     def test_delete_server_building(self):
         """Delete a server while building"""
