@@ -1,4 +1,5 @@
 
+import base64
 import json
 import os
 
@@ -6,6 +7,7 @@ import unittest2 as unittest
 
 from stacktester import openstack
 from stacktester import exceptions
+from stacktester.common import ssh
 
 
 class ServersTest(unittest.TestCase):
@@ -26,13 +28,14 @@ class ServersTest(unittest.TestCase):
             'metadata',
             'addresses',
             'links',
+            'progress',
+            'imageRef',
+            'flavorRef',
+            'created',
+            'updated',
 
             #KNOWN-ISSUE lp804093
             'uuid',
-
-            #KNOWN-ISSUE lp804096
-            #'created',
-            #'updated',
 
             #KNOWN-ISSUE
             #'primaryIPv4',
@@ -40,11 +43,6 @@ class ServersTest(unittest.TestCase):
             #KNOWN-ISSUE
             #'primaryIPv6',
 
-            #KNOWN-ISSUE
-            #'progress',
-
-            'imageRef',
-            'flavorRef',
         ))
         self.assertEqual(actual_keys, expected_keys)
 
@@ -68,11 +66,19 @@ class ServersTest(unittest.TestCase):
             },
         ]
 
-        # KNOWN-ISSUE lp803505
-        #self.assertEqual(server['links'], expected_links)
+        self.assertEqual(server['links'], expected_links)
+
+    def _get_ssh_client(self, password):
+        return ssh.Client(self.access_ip, 'root', password, self.ssh_timeout)
+
+    def _assert_ssh_password(self, password):
+        client = self._get_ssh_client(password)
+        self.assertTrue(client.test_connection_auth())
 
     def test_build_server(self):
         """Build a server"""
+
+        file_contents = 'testing'
 
         expected_server = {
             'name': 'testserver',
@@ -83,8 +89,8 @@ class ServersTest(unittest.TestCase):
             'personality': [
                 {
                     'path': '/etc/test.txt',
-                    'contents': 'VGVzdGluZyB0ZXN0aW5n'
-                }
+                    'contents': base64.encode(file_contents),
+                },
             ],
             'adminPass': 'my_password',
             'imageRef': self.image_ref,
@@ -111,6 +117,14 @@ class ServersTest(unittest.TestCase):
                          created_server['metadata'])
 
         self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+
+        # Assert password was set to that in request
+        self._assert_ssh_password('my_password')
+
+        # Assert injected file is on instance
+        client = self._get_ssh_client('my_password')
+        injected_file = client.exec_command('cat /etc/test.txt')
+        self.assertEqual(injected_file, file_contents)
 
         self.os.nova.delete_server(created_server['id'])
 
@@ -242,12 +256,12 @@ class ServersTest(unittest.TestCase):
 
         self.assertEqual(400, resp.status)
 
-        # KNOWN-ISSUE lp804084
-        #fault = json.loads(body)
+        fault = json.loads(body)
         expected_fault = {
             "badRequest": {
                 "message": "Cannot find requested flavor",
                 "code": 400,
             },
         }
+        # KNOWN-ISSUE lp804084
         #self.assertEqual(fault, expected_fault)
