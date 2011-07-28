@@ -46,12 +46,10 @@ def parse_options():
                       action="store_true",
                       help="Toggle verbose output.")
     parser.add_option("--with-xunit",
-                      "--with-xunit",
                       dest="xunit",
                       action="store_true",
                       help="Toggle xunit output.")
     parser.add_option("--xunit-file",
-                      "--xunit-file",
                       dest="xunit_file",
                       metavar="XUNIT_OUTPUT_FILE",
                       help="Load configuration from XUNIT_OUTPUT_FILE.",
