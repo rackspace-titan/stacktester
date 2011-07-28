@@ -73,6 +73,7 @@ class ServersTest(unittest.TestCase):
         """Build a server"""
 
         file_contents = 'testing'
+        server_password = 'testpwd'
 
         expected_server = {
             'name': 'testserver',
@@ -86,7 +87,7 @@ class ServersTest(unittest.TestCase):
                     'contents': base64.b64encode(file_contents),
                 },
             ],
-            'adminPass': 'my_password',
+            'adminPass': server_password,
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
         }
@@ -95,6 +96,7 @@ class ServersTest(unittest.TestCase):
         response, body = self.os.nova.request('POST',
                                               '/servers',
                                               body=post_body)
+
         # KNOWN-ISSUE
         #self.assertEqual(response.status, 202)
         self.assertEqual(response.status, 200)
@@ -120,11 +122,11 @@ class ServersTest(unittest.TestCase):
             ip = network[0]['addr']
         except KeyError:
             self.fail("Failed to get access ip")
-        client = ssh.Client(ip, 'root', 'my_password', self.ssh_timeout)
+        client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
         self.assertTrue(client.test_connection_auth())
 
         # Assert injected file is on instance
-        client = ssh.Client(ip, 'root', 'my_password', self.ssh_timeout)
+        client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
         injected_file = client.exec_command('cat /etc/test.txt')
         self.assertEqual(injected_file, file_contents)
 
