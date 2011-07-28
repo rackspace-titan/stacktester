@@ -112,7 +112,7 @@ class ServersTest(unittest.TestCase):
 
         self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
 
-        server = self.os.nova.get_sever(created_server['id'])
+        server = self.os.nova.get_server(created_server['id'])
 
         # Assert password was set to that in request
         try:
