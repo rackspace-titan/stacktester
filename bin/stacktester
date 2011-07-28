@@ -20,6 +20,9 @@ def main():
     if options.xunit:
         nose_argv.append("--with-xunit")
 
+    if options.xunit_file is not None:
+        nose_argv.append("--xunit-file=" + options.xunit_file)
+
     nose_argv.extend(args)
     status = run_nose_without_exiting(module="stacktester",
                                       argv=nose_argv,
@@ -42,11 +45,17 @@ def parse_options():
                       dest="verbose",
                       action="store_true",
                       help="Toggle verbose output.")
-    parser.add_option("-x",
+    parser.add_option("--with-xunit",
                       "--with-xunit",
                       dest="xunit",
                       action="store_true",
                       help="Toggle xunit output.")
+    parser.add_option("--xunit-file",
+                      "--xunit-file",
+                      dest="xunit_file",
+                      metavar="XUNIT_OUTPUT_FILE",
+                      help="Load configuration from XUNIT_OUTPUT_FILE.",
+                      default="nosetests.xml")
     return parser.parse_args()
 
 
