@@ -51,7 +51,6 @@ class API(stacktester.common.http.Client):
                 data = json.loads(body)
                 return data[entity_name]['status'] == status
             except (ValueError, KeyError):
-                print body
                 return False
 
         try:
