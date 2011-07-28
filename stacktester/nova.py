@@ -104,10 +104,10 @@ class API(stacktester.common.http.Client):
         """
         resp, body = self.request('GET', '/servers/%s' % server_id)
         try:
-            self.assertEqual(resp['status'], 200)
+            assert resp['status'] == '200'
             data = json.loads(body)
             return data['server']
-        except Exception:
+        except (AssertionError, ValueError, TypeError, KeyError):
             raise exceptions.ServerNotFound(server_id)
 
     def create_server(self, entity):
@@ -126,7 +126,7 @@ class API(stacktester.common.http.Client):
         try:
             data = json.loads(body)
             return data['server']
-        except Exception:
+        except (ValueError, TypeError, KeyError):
             raise AssertionError("Failed to create server")
 
     def delete_server(self, server_id):
