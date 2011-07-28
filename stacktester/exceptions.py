@@ -4,3 +4,6 @@ class TimeoutException(Exception):
     def __repr__(self):
         return "Request Timed Out"
 
+
+class ServerNotFound(KeyError):
+    pass
