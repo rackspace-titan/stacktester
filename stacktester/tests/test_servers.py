@@ -17,6 +17,7 @@ class ServersTest(unittest.TestCase):
         self.os = openstack.Manager()
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
+        self.ssh_timeout = self.os.config.nova.ssh_timeout
 
     def _assert_server_entity(self, server):
         actual_keys = set(server.keys())
@@ -29,8 +30,8 @@ class ServersTest(unittest.TestCase):
             'addresses',
             'links',
             'progress',
-            'imageRef',
-            'flavorRef',
+            'image',
+            'flavor',
             'created',
             'updated',
 
@@ -68,13 +69,6 @@ class ServersTest(unittest.TestCase):
 
         self.assertEqual(server['links'], expected_links)
 
-    def _get_ssh_client(self, password):
-        return ssh.Client(self.access_ip, 'root', password, self.ssh_timeout)
-
-    def _assert_ssh_password(self, password):
-        client = self._get_ssh_client(password)
-        self.assertTrue(client.test_connection_auth())
-
     def test_build_server(self):
         """Build a server"""
 
@@ -89,7 +83,7 @@ class ServersTest(unittest.TestCase):
             'personality': [
                 {
                     'path': '/etc/test.txt',
-                    'contents': base64.encode(file_contents),
+                    'contents': base64.b64encode(file_contents),
                 },
             ],
             'adminPass': 'my_password',
@@ -119,10 +113,16 @@ class ServersTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
 
         # Assert password was set to that in request
-        self._assert_ssh_password('my_password')
+        try:
+            (_, network) = created_server['addresses'].popitem()
+            ip = network['addr']
+        except KeyError:
+            self.fail("Failed to get access ip")
+        client = ssh.Client(ip, 'root', 'my_password', self.ssh_timeout)
+        self.assertTrue(client.test_connection_auth())
 
         # Assert injected file is on instance
-        client = self._get_ssh_client('my_password')
+        client = ssh.Client(ip, 'root', 'my_password', self.ssh_timeout)
         injected_file = client.exec_command('cat /etc/test.txt')
         self.assertEqual(injected_file, file_contents)
 
