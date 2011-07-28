@@ -162,6 +162,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertEqual('202', response['status'])
         # KNOWN-ISSUE
         #self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
+        self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Check that the instance's imageRef matches the new imageRef
