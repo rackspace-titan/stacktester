@@ -114,7 +114,7 @@ class ImagesTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(server['id'], 'ACTIVE')
 
         # Create snapshot
-        server_ref = 'http://' + os.path.join(self.api_url, 'servers', server['id'])
+        server_ref = 'http://' + os.path.join(self.api_url, 'servers', str(server['id']))
         expected_image = {
             'name' : 'backup',
             'serverRef' : server_ref,
