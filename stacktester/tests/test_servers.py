@@ -80,12 +80,12 @@ class ServersTest(unittest.TestCase):
                 'key1': 'value1',
                 'key2': 'value2',
             },
-            'personality' : [
+            'personality': [
                 {
-                    'path' : '/etc/test.txt'
-                    'contents' : 'VGVzdGluZyB0ZXN0aW5n'
+                    'path': '/etc/test.txt',
+                    'contents': 'VGVzdGluZyB0ZXN0aW5n'
                 }
-            ]
+            ],
             'adminPass': 'my_password',
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
