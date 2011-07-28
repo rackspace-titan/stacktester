@@ -110,7 +110,7 @@ class ServersTest(unittest.TestCase):
             (_, network) = server['addresses'].popitem()
             ip = network[0]['addr']
         except KeyError:
-            self.fail("Failed to get access ip")
+            self.fail("Failed to retrieve IP address from server entity")
 
         # Assert password works
         client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
@@ -167,7 +167,7 @@ class ServersTest(unittest.TestCase):
             (_, network) = server['addresses'].popitem()
             ip = network[0]['addr']
         except KeyError:
-            self.fail("Failed to get access ip")
+            self.fail("Failed to retrieve IP address from server entity")
 
         # Assert injected file is on instance, also verifying password works
         client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
@@ -221,7 +221,7 @@ class ServersTest(unittest.TestCase):
             (_, network) = server['addresses'].popitem()
             ip = network[0]['addr']
         except KeyError:
-            self.fail("Failed to get access ip")
+            self.fail("Failed to retrieve IP address from server entity")
 
         # Assert password was set to that in request
         client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
