@@ -94,6 +94,22 @@ class API(stacktester.common.http.Client):
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
 
+    def get_server(self, server_id):
+        """Fetch a server by id
+
+        :param server_id: dict of server attributes
+        :returns: dict of server attributes
+        :raises: ServerNotFound if server does not exist
+
+        """
+        resp, body = self.request('GET', '/servers/%s' % server_id)
+        try:
+            self.assertEqual(resp['status'], 200)
+            data = json.loads(body)
+            return data['server']
+        except Exception:
+            raise exceptions.ServerNotFound(server_id)
+
     def create_server(self, entity):
         """Attempt to create a new server.
 
