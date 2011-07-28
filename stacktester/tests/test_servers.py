@@ -72,8 +72,56 @@ class ServersTest(unittest.TestCase):
     def test_build_server(self):
         """Build a server"""
 
+        expected_server = {
+            'name': 'testserver',
+            'metadata': {
+                'key1': 'value1',
+                'key2': 'value2',
+            },
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
+        }
+
+        post_body = json.dumps({'server': expected_server})
+        response, body = self.os.nova.request('POST',
+                                              '/servers',
+                                              body=post_body)
+
+        # KNOWN-ISSUE
+        #self.assertEqual(response.status, 202)
+        self.assertEqual(response.status, 200)
+
+        _body = json.loads(body)
+        self.assertEqual(_body.keys(), ['server'])
+        created_server = _body['server']
+
+        admin_pass = created_server.pop('adminPass', None)
+        self._assert_server_entity(created_server)
+        self.assertEqual(expected_server['name'], created_server['name'])
+        self.assertEqual(expected_server['metadata'],
+                         created_server['metadata'])
+
+        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+
+        server = self.os.nova.get_server(created_server['id'])
+
+        # Find IP of server
+        try:
+            (_, network) = server['addresses'].popitem()
+            ip = network[0]['addr']
+        except KeyError:
+            self.fail("Failed to get access ip")
+
+        # Assert password works
+        client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
+        self.assertTrue(client.test_connection_auth())
+
+        self.os.nova.delete_server(server['id'])
+
+    def test_build_server_with_file(self):
+        """Build a server"""
+
         file_contents = 'testing'
-        server_password = 'testpwd'
 
         expected_server = {
             'name': 'testserver',
@@ -87,6 +135,58 @@ class ServersTest(unittest.TestCase):
                     'contents': base64.b64encode(file_contents),
                 },
             ],
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
+        }
+
+        post_body = json.dumps({'server': expected_server})
+        response, body = self.os.nova.request('POST',
+                                              '/servers',
+                                              body=post_body)
+
+        # KNOWN-ISSUE
+        #self.assertEqual(response.status, 202)
+        self.assertEqual(response.status, 200)
+
+        _body = json.loads(body)
+        self.assertEqual(_body.keys(), ['server'])
+        created_server = _body['server']
+
+        admin_pass = created_server.pop('adminPass', None)
+        self._assert_server_entity(created_server)
+        self.assertEqual(expected_server['name'], created_server['name'])
+        self.assertEqual(expected_server['metadata'],
+                         created_server['metadata'])
+
+        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+
+        server = self.os.nova.get_server(created_server['id'])
+
+        # Find IP of server
+        try:
+            (_, network) = server['addresses'].popitem()
+            ip = network[0]['addr']
+        except KeyError:
+            self.fail("Failed to get access ip")
+
+        # Assert injected file is on instance, also verifying password works
+        client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
+        injected_file = client.exec_command('cat /etc/test.txt')
+        self.assertEqual(injected_file, file_contents)
+
+        self.os.nova.delete_server(server['id'])
+
+    def test_build_server_with_password(self):
+        """Build a server with a password"""
+
+        server_password = 'testpwd'
+
+        expected_server = {
+            'name': 'testserver',
+            'metadata': {
+                'key1': 'value1',
+                'key2': 'value2',
+            },
             'adminPass': server_password,
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
@@ -116,39 +216,33 @@ class ServersTest(unittest.TestCase):
 
         server = self.os.nova.get_server(created_server['id'])
 
-        # Assert password was set to that in request
+        # Find IP of server
         try:
             (_, network) = server['addresses'].popitem()
             ip = network[0]['addr']
         except KeyError:
             self.fail("Failed to get access ip")
+
+        # Assert password was set to that in request
         client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
         self.assertTrue(client.test_connection_auth())
-
-        # Assert injected file is on instance
-        client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
-        injected_file = client.exec_command('cat /etc/test.txt')
-        self.assertEqual(injected_file, file_contents)
 
         self.os.nova.delete_server(server['id'])
 
     def test_delete_server_building(self):
         """Delete a server while building"""
 
+        # Make create server request
         server = {
             'name' : 'testserver',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
         }
-
         created_server = self.os.nova.create_server(server)
 
-        # Server should immediately be accessible and building
-        url = '/servers/%s' % created_server['id']
-        response, body = self.os.nova.request('GET', url)
-        self.assertEqual(response['status'], '200')
-        resp_server = json.loads(body)['server']
-        self.assertEqual(resp_server['status'], 'BUILD')
+        # Server should immediately be accessible, but in have building status
+        server = self.os.nova.get_server(created_server['id'])
+        self.assertEqual(server['status'], 'BUILD')
 
         self.os.nova.delete_server(created_server['id'])
 
