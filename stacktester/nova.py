@@ -47,8 +47,12 @@ class API(stacktester.common.http.Client):
         """Poll the provided url until expected entity status is returned"""
 
         def check_response(resp, body):
-            data = json.loads(body)
-            return data[entity_name]['status'] == status
+            try:
+                data = json.loads(body)
+                return data[entity_name]['status'] == status
+            except (ValueError, KeyError):
+                print body
+                return False
 
         try:
             self.poll_request('GET', url, check_response, **kwargs)
