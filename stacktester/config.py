@@ -57,13 +57,23 @@ class EnvironmentConfig(object):
 
     @property
     def image_ref(self):
-        """ valid imageRef to use """
+        """Valid imageRef to use """
         return self.get("image_ref", 3);
 
     @property
+    def image_ref_alt(self):
+        """Valid imageRef to rebuild images with"""
+        return self.get("image_ref_alt", 3);
+
+    @property
     def flavor_ref(self):
-        """ valid flavorRef to use """
+        """Valid flavorRef to use"""
         return self.get("flavor_ref", 1);
+
+    @property
+    def flavor_ref_alt(self):
+        """Valid flavorRef to resize images with"""
+        return self.get("flavor_ref", 2);
 
     @property
     def multi_node(self):
