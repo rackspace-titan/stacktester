@@ -17,6 +17,9 @@ def main():
     if options.verbose:
         nose_argv.append("-v")
 
+    if options.xunit:
+        nose_argv.append("--with-xunit")
+
     nose_argv.extend(args)
     status = run_nose_without_exiting(module="stacktester",
                                       argv=nose_argv,
@@ -39,6 +42,11 @@ def parse_options():
                       dest="verbose",
                       action="store_true",
                       help="Toggle verbose output.")
+    parser.add_option("-x",
+                      "--with-xunit",
+                      dest="xunit",
+                      action="store_true",
+                      help="Toggle xunit output.")
     return parser.parse_args()
 
 
