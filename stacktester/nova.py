@@ -47,8 +47,11 @@ class API(stacktester.common.http.Client):
         """Poll the provided url until expected entity status is returned"""
 
         def check_response(resp, body):
-            data = json.loads(body)
-            return data[entity_name]['status'] == status
+            try:
+                data = json.loads(body)
+                return data[entity_name]['status'] == status
+            except (ValueError, KeyError):
+                return False
 
         try:
             self.poll_request('GET', url, check_response, **kwargs)
@@ -94,6 +97,22 @@ class API(stacktester.common.http.Client):
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
 
+    def get_server(self, server_id):
+        """Fetch a server by id
+
+        :param server_id: dict of server attributes
+        :returns: dict of server attributes
+        :raises: ServerNotFound if server does not exist
+
+        """
+        resp, body = self.request('GET', '/servers/%s' % server_id)
+        try:
+            assert resp['status'] == '200'
+            data = json.loads(body)
+            return data['server']
+        except (AssertionError, ValueError, TypeError, KeyError):
+            raise exceptions.ServerNotFound(server_id)
+
     def create_server(self, entity):
         """Attempt to create a new server.
 
@@ -110,7 +129,7 @@ class API(stacktester.common.http.Client):
         try:
             data = json.loads(body)
             return data['server']
-        except Exception:
+        except (ValueError, TypeError, KeyError):
             raise AssertionError("Failed to create server")
 
     def delete_server(self, server_id):
