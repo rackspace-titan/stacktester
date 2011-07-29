@@ -20,7 +20,7 @@ def main():
     if options.xunit:
         nose_argv.append("--with-xunit")
 
-    if options.xunit_file is not None:
+    if options.xunit_file:
         nose_argv.append("--xunit-file=" + options.xunit_file)
 
     nose_argv.extend(args)
