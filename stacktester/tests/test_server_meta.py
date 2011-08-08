@@ -69,7 +69,7 @@ class ServersMetadataTest(unittest.TestCase):
 
         result = json.loads(body)
         expected = post_metadata
-        expected['testEntry'] = 'testValue'
+        expected['metadata']['testEntry'] = 'testValue'
         self.assertEqual(expected, result)
 
     def test_put_server_metadata(self):
@@ -170,9 +170,12 @@ class ServersMetadataTest(unittest.TestCase):
         response, body = self.os.nova.request('DELETE', url)
         self.assertEquals(204, response.status)
 
+        url = '/servers/%s/metadata/testEntry' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEquals(404, response.status)
+
         url = '/servers/%s/metadata' % self.server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEquals(200, response.status)
-
         result = json.loads(body)
         self.assertDictEqual({'metadata':{}}, result)
