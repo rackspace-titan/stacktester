@@ -44,7 +44,7 @@ class ServerActionsTest(unittest.TestCase):
         self.access_ip = server['addresses']['public'][0]['addr']
 
         # Ensure server came up
-        self._assert_ssh_password()
+        #self._assert_ssh_password()
 
     def tearDown(self):
         self.os.nova.delete_server(self.server_id)
@@ -259,3 +259,77 @@ class ServerActionsTest(unittest.TestCase):
         server = self.os.nova.get_server(self.server_id)
         self.assertEqual(self.flavor_ref, server['flavorRef'])
 
+
+
+class SnapshotTests(unittest.TestCase):
+
+    def setUp(self):
+        self.os = openstack.Manager()
+
+        self.image_ref = self.os.config.env.image_ref
+        self.flavor_ref = self.os.config.env.flavor_ref
+        self.ssh_timeout = self.os.config.nova.ssh_timeout
+
+        self.server_name = 'testserver'
+
+        expected_server = {
+            'name' : self.server_name,
+            'imageRef' : self.image_ref,
+            'flavorRef' : self.flavor_ref,
+        }
+
+        created_server = self.os.nova.create_server(expected_server)
+        self.server_id = created_server['id']
+
+    def tearDown(self):
+        self.os.nova.delete_server(self.server_id)
+
+    def _wait_for_status(self, server_id, status):
+        try:
+            self.os.nova.wait_for_server_status(server_id, status)
+        except exceptions.TimeoutException:
+            self.fail("Server failed to change status to %s" % status)
+
+    def test_snapshot_server_active(self):
+        """Create image from an existing server"""
+
+        # Wait for server to come up before running this test
+        self._wait_for_status(self.server_id, 'ACTIVE')
+
+        # Create snapshot
+        image_data = {'name' : 'backup'}
+        req_body = json.dumps({'createImage': image_data})
+        url = '/servers/%s/action' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=req_body)
+
+        self.assertEqual(response['status'], '202')
+        image_ref = response['location']
+        snapshot_id = image_ref.rsplit('/',1)[1]
+
+        # Get snapshot and check its attributes
+        resp, body = self.os.nova.request('GET', '/images/%s' % snapshot_id)
+        snapshot = json.loads(body)['image']
+        self.assertEqual(snapshot['name'], image_data['name'])
+        server_ref = snapshot['server']['links'][0]['href']
+        self.assertTrue(server_ref.endswith('/%s' % self.server_id))
+
+        # Ensure image is actually created
+        self.os.nova.wait_for_image_status(snapshot['id'], 'ACTIVE')
+
+        # Cleaning up
+        self.os.nova.request('DELETE', '/images/%s' % snapshot_id)
+
+    def test_snapshot_server_inactive(self):
+        """Ensure inability to snapshot server in BUILD state"""
+
+        # Create snapshot
+        req_body = json.dumps({'createImage': {'name' : 'backup'}})
+        url = '/servers/%s/action' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=req_body)
+
+        # KNOWN-ISSUE - we shouldn't be able to snapshot a building server
+        #self.assertEqual(response['status'], '400')  # what status code?
+        self.assertEqual(response['status'], '202')
+        snapshot_id = response['location'].rsplit('/', 1)[1]
+        # Delete image for now, won't need this once correct status code is in
+        self.os.nova.request('DELETE', '/images/%s' % snapshot_id)
