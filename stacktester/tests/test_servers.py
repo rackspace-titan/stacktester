@@ -87,9 +87,7 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
-        # KNOWN-ISSUE
-        #self.assertEqual(response.status, 202)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(response.status, 202)
 
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])
@@ -144,9 +142,7 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
-        # KNOWN-ISSUE
-        #self.assertEqual(response.status, 202)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(response.status, 202)
 
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])
@@ -197,9 +193,7 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
-        # KNOWN-ISSUE
-        #self.assertEqual(response.status, 202)
-        self.assertEqual(response.status, 200)
+        self.assertEqual(response.status, 202)
 
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])

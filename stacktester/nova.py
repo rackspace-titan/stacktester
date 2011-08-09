@@ -126,6 +126,7 @@ class API(stacktester.common.http.Client):
         })
 
         resp, body = self.request('POST', '/servers', body=post_body)
+        assert resp.status_int == 202
         try:
             data = json.loads(body)
             return data['server']
