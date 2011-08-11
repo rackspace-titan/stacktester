@@ -31,7 +31,7 @@ class ServerAddressesTest(unittest.TestCase):
         self.os.nova.delete_server(self.server_id)
 
     def test_server_addresses(self):
-        """Ensure address information is available"""
+        """Retrieve server addresses information"""
         url = '/servers/%s' % self.server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response.status, 200)

@@ -71,7 +71,7 @@ class ServerActionsTest(unittest.TestCase):
         return time.time() - uptime
 
     def test_reboot_server_soft(self):
-        """Verify that a server can be rebooted (SOFT)."""
+        """Reboot a server (SOFT)"""
 
         # SSH and get the uptime
         initial_time_started = self._get_boot_time()
@@ -98,7 +98,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_reboot_server_hard(self):
-        """Verify that a server can be rebooted (HARD)."""
+        """Rebood a server (HARD)"""
 
         # SSH and get the uptime
         initial_time_started = self._get_boot_time()
