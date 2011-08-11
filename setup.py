@@ -9,8 +9,13 @@ setuptools.setup(
     description="Testing suite for OpenStack software suite.",
     author="Rackspace Titan",
     packages=setuptools.find_packages(),
-    scripts=[
-        "bin/stacktester",
-    ],
+    scripts=["bin/stacktester"],
     test_suite="nose.collector",
+    install_requires=[
+        "httplib2",
+        "nose",
+        "unittest2",
+        "pycrypto==2.1.0",
+        "paramiko==1.7.6",
+    ],
 )
