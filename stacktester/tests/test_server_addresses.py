@@ -30,27 +30,34 @@ class ServerAddressesTest(unittest.TestCase):
     def tearDown(self):
         self.os.nova.delete_server(self.server_id)
 
-    def test_list_addresses(self):
+    def test_server_addresses(self):
         """Ensure address information is available"""
         url = '/servers/%s' % self.server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(response.status, 200)
-        _body = json.loads(body)
-        self.assertTrue('addresses' in _body['server'].keys())
-        # KNOWN-ISSUE lp761652
-        #self.assertEqual(_body['server']['addresses'].keys(), ['private'])
+        body = json.loads(body)
+        self.assertTrue('addresses' in body['server'].keys())
+        server_addresses = body['server']['addresses']
 
         url = '/servers/%s/ips' % self.server_id
         response, body = self.os.nova.request('GET', url)
-        # KNOWN-ISSUE lp761652
-        #self.assertEqual(response.status, 200)
-        #_body = json.loads(body)
-        #self.assertEqual(_body.keys(), ['addresses'])
-        #self.assertEqual(_body['addresses'].keys(), ['private'])
+        self.assertEqual(response.status, 200)
+        body = json.loads(body)
+        self.assertEqual(body.keys(), ['addresses'])
+        ips_addresses = body['addresses']
 
-        url = '/servers/%s/ips/private' % self.server_id
-        response, body = self.os.nova.request('GET', url)
-        # KNOWN-ISSUE lp761652
-        #self.assertEqual(response.status, 200)
-        #_body = json.loads(body)
-        #self.assertEqual(_body.keys(), ['private'])
+        self.assertEqual(server_addresses, ips_addresses)
+
+        # Now validate entities within addresses containers if available
+        for (network, network_data) in ips_addresses.items():
+            # Ensure we can query for each particular network
+            url = '/servers/%s/ips/%s' % (self.server_id, network)
+            response, body = self.os.nova.request('GET', url)
+            self.assertEqual(response.status, 200)
+            body = json.loads(body)
+            self.assertEqual(body.keys(), [network])
+            self.assertEqual(body[network], network_data)
+
+            for ip_data in network_data:
+                self.assertEqual(set(ip_data.keys()),
+                                 set(['addr', 'version']))
