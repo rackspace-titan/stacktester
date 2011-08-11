@@ -117,7 +117,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(server['id'])
 
     def test_build_server_with_file(self):
-        """Build a server"""
+        """Build a server with an injected file"""
 
         file_contents = 'testing'
 
