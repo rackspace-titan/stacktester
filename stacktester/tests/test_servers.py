@@ -309,7 +309,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(server_id)
 
     def test_create_server_invalid_image(self):
-        """Verify that creating a server with an unknown image fails"""
+        """Create a server with an unknown image"""
 
         post_body = json.dumps({
             'server' : {
@@ -334,7 +334,7 @@ class ServersTest(unittest.TestCase):
         #self.assertEqual(fault, expected_fault)
 
     def test_create_server_invalid_flavor(self):
-        """Verify that creating a server with an unknown flavor fails"""
+        """Create a server with an unknown flavor"""
 
         post_body = json.dumps({
             'server' : {
