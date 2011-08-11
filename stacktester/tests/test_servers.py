@@ -18,6 +18,7 @@ class ServersTest(unittest.TestCase):
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
         self.ssh_timeout = self.os.config.nova.ssh_timeout
+        self.build_timeout = self.os.config.nova.build_timeout
 
     def _assert_server_entity(self, server):
         actual_keys = set(server.keys())
@@ -93,13 +94,15 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(_body.keys(), ['server'])
         created_server = _body['server']
 
-        admin_pass = created_server.pop('adminPass', None)
+        admin_pass = created_server.pop('adminPass')
         self._assert_server_entity(created_server)
         self.assertEqual(expected_server['name'], created_server['name'])
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -154,7 +157,9 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -206,7 +211,9 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -259,7 +266,9 @@ class ServersTest(unittest.TestCase):
         created_server = self.os.nova.create_server(expected_server)
         server_id = created_server['id']
 
-        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id,
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         self.os.nova.delete_server(server_id)
 
@@ -285,7 +294,9 @@ class ServersTest(unittest.TestCase):
         server_id = created_server['id']
 
         # Wait for it to be built
-        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id,
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         # Update name
         new_server = {'name': 'updatedtestserver'}
@@ -295,6 +306,8 @@ class ServersTest(unittest.TestCase):
         url = '/servers/%s' % server_id
         resp, body = self.os.nova.request('PUT', url, body=put_body)
 
+        #KNOWN-ISSUE
+        #self.assertEqual(resp.status, 202)
         self.assertEqual(resp.status, 204)
         self.assertEqual(body, '')
 

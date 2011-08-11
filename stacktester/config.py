@@ -44,6 +44,12 @@ class NovaConfig(object):
         """Timeout in seconds to use when connecting via ssh."""
         return float(self.get("ssh_timeout", 300))
 
+    @property
+    def build_timeout(self):
+        """Timeout in seconds to use when connecting via ssh."""
+        return float(self.get("build_timeout", 300))
+
+
 
 class EnvironmentConfig(object):
     def __init__(self, conf):
