@@ -127,8 +127,7 @@ class API(stacktester.common.http.Client):
 
         resp, body = self.request('POST', '/servers', body=post_body)
         try:
-            #KNOWN-ISSUE
-            #assert resp['status'] == '202'
+            assert resp['status'] == '202'
             data = json.loads(body)
             return data['server']
         except (AssertionError, ValueError, TypeError, KeyError):

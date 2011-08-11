@@ -67,8 +67,7 @@ class FlavorsTest(unittest.TestCase):
             },
         ]
 
-        # KNOWN-ISSUE lp803505
-        #self.assertEqual(actual_links, expected_links)
+        self.assertEqual(actual_links, expected_links)
 
     def test_show_flavor(self):
         """Retrieve a single flavor"""
