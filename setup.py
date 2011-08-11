@@ -15,7 +15,6 @@ setuptools.setup(
         "httplib2",
         "nose",
         "unittest2",
-        "pycrypto==2.1.0",
         "paramiko==1.7.6",
     ],
 )
