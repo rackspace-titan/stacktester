@@ -44,7 +44,7 @@ class ServerActionsTest(unittest.TestCase):
         self.access_ip = server['addresses']['public'][0]['addr']
 
         # Ensure server came up
-        #self._assert_ssh_password()
+        self._assert_ssh_password()
 
     def tearDown(self):
         self.os.nova.delete_server(self.server_id)
@@ -65,13 +65,22 @@ class ServerActionsTest(unittest.TestCase):
 
     def _get_boot_time(self):
         """Return the time the server was started"""
-        client = self._get_ssh_client(self.server_password)
-        output = client.exec_command("cat /proc/uptime")
+        output = self._read_file("/proc/uptime")
         uptime = float(output.split().pop(0))
         return time.time() - uptime
 
+    def _write_file(self, filename, contents):
+        return self._exec_command("echo -n %s > %s" % (contents, filename))
+
+    def _read_file(self, filename):
+        return self._exec_command("cat %s" % filename)
+
+    def _exec_command(self, command):
+        client = self._get_ssh_client(self.server_password)
+        return client.exec_command(command)
+
     def test_reboot_server_soft(self):
-        """Verify that a server can be rebooted (SOFT)."""
+        """Reboot a server (SOFT)"""
 
         # SSH and get the uptime
         initial_time_started = self._get_boot_time()
@@ -98,7 +107,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertTrue(initial_time_started < post_reboot_time_started)
 
     def test_reboot_server_hard(self):
-        """Verify that a server can be rebooted (HARD)."""
+        """Rebood a server (HARD)"""
 
         # SSH and get the uptime
         initial_time_started = self._get_boot_time()
@@ -151,6 +160,11 @@ class ServerActionsTest(unittest.TestCase):
     def test_rebuild_server(self):
         """Rebuild a server"""
 
+        filename = '/tmp/testfile'
+        contents = 'WORDS'
+        self._write_file(filename, contents)
+        self.assertEqual(self._read_file(filename), contents)
+
         # Make rebuild request
         post_body = json.dumps({
             'rebuild' : {
@@ -167,18 +181,24 @@ class ServerActionsTest(unittest.TestCase):
         self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
         self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
 
+        # Treats an issue where we ssh'd in too soon after rebuild
+        time.sleep(30)
+
         # Check that the instance's imageRef matches the new imageRef
         server = self.os.nova.get_server(self.server_id)
-        # KNOWN-ISSUE
-        #self.assertEqual(self.image_ref_alt, server['imageRef'])
+        ref_match = self.image_ref_alt == server['image']['links'][0]['href']
+        id_match = self.image_ref_alt == server['image']['id']
+        self.assertTrue(ref_match or id_match)
 
         # SSH into the server to ensure it came back up
         self._assert_ssh_password()
 
+        # make sure file is gone
+        self.assertEqual(self._read_file(filename), '')
+
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_confirm(self):
         """Resize a server"""
-
         # Make resize request
         post_body = json.dumps({
             'resize' : {
@@ -190,14 +210,13 @@ class ServerActionsTest(unittest.TestCase):
 
         # Wait for status transition
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'RESIZE')
         # KNOWN-ISSUE
         #self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
         self.os.nova.wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
 
         # Ensure API reports new flavor
         server = self.os.nova.get_server(self.server_id)
-        self.assertEqual(self.flavor_ref_alt, server['flavorRef'])
+        self.assertEqual(self.flavor_ref_alt, server['flavor']['id'])
 
         #SSH into the server to ensure it came back up
         self._assert_ssh_password()
@@ -215,7 +234,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Ensure API still reports new flavor
         server = self.os.nova.get_server(self.server_id)
-        self.assertEqual(self.flavor_ref_alt, server['flavorRef'])
+        self.assertEqual(self.flavor_ref_alt, server['flavor']['id'])
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_revert(self):
@@ -232,7 +251,6 @@ class ServerActionsTest(unittest.TestCase):
 
         # Wait for status transition
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'RESIZE')
         # KNOWN-ISSUE
         #self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
         self.os.nova.wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
@@ -242,7 +260,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Ensure API reports new flavor
         server = self.os.nova.get_server(self.server_id)
-        self.assertEqual(self.flavor_ref_alt, server['flavorRef'])
+        self.assertEqual(self.flavor_ref_alt, server['flavor']['id'])
 
         # Make revertResize request
         post_body = json.dumps({
@@ -257,8 +275,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Ensure flavor ref was reverted to original
         server = self.os.nova.get_server(self.server_id)
-        self.assertEqual(self.flavor_ref, server['flavorRef'])
-
+        self.assertEqual(self.flavor_ref, server['flavor']['id'])
 
 
 class SnapshotTests(unittest.TestCase):
@@ -301,6 +318,8 @@ class SnapshotTests(unittest.TestCase):
         req_body = json.dumps({'createImage': image_data})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=req_body)
+        print response
+        print body
 
         self.assertEqual(response['status'], '202')
         image_ref = response['location']

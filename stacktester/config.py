@@ -44,6 +44,12 @@ class NovaConfig(object):
         """Timeout in seconds to use when connecting via ssh."""
         return float(self.get("ssh_timeout", 300))
 
+    @property
+    def build_timeout(self):
+        """Timeout in seconds to use when connecting via ssh."""
+        return float(self.get("build_timeout", 300))
+
+
 
 class EnvironmentConfig(object):
     def __init__(self, conf):
@@ -74,7 +80,7 @@ class EnvironmentConfig(object):
     @property
     def flavor_ref_alt(self):
         """Valid flavorRef to resize images with"""
-        return self.get("flavor_ref", 2);
+        return self.get("flavor_ref_alt", 2);
 
     @property
     def multi_node(self):

@@ -18,6 +18,7 @@ class ServersTest(unittest.TestCase):
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
         self.ssh_timeout = self.os.config.nova.ssh_timeout
+        self.build_timeout = self.os.config.nova.build_timeout
 
     def _assert_server_entity(self, server):
         actual_keys = set(server.keys())
@@ -93,13 +94,15 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(_body.keys(), ['server'])
         created_server = _body['server']
 
-        admin_pass = created_server.pop('adminPass', None)
+        admin_pass = created_server.pop('adminPass')
         self._assert_server_entity(created_server)
         self.assertEqual(expected_server['name'], created_server['name'])
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -117,7 +120,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(server['id'])
 
     def test_build_server_with_file(self):
-        """Build a server"""
+        """Build a server with an injected file"""
 
         file_contents = 'testing'
 
@@ -154,7 +157,9 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -206,7 +211,9 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
-        self.os.nova.wait_for_server_status(created_server['id'], 'ACTIVE')
+        self.os.nova.wait_for_server_status(created_server['id'],
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
 
@@ -259,7 +266,9 @@ class ServersTest(unittest.TestCase):
         created_server = self.os.nova.create_server(expected_server)
         server_id = created_server['id']
 
-        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id,
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         self.os.nova.delete_server(server_id)
 
@@ -285,7 +294,9 @@ class ServersTest(unittest.TestCase):
         server_id = created_server['id']
 
         # Wait for it to be built
-        self.os.nova.wait_for_server_status(server_id, 'ACTIVE')
+        self.os.nova.wait_for_server_status(server_id,
+                                            'ACTIVE',
+                                            timeout=self.build_timeout)
 
         # Update name
         new_server = {'name': 'updatedtestserver'}
@@ -309,7 +320,7 @@ class ServersTest(unittest.TestCase):
         self.os.nova.delete_server(server_id)
 
     def test_create_server_invalid_image(self):
-        """Verify that creating a server with an unknown image fails"""
+        """Create a server with an unknown image"""
 
         post_body = json.dumps({
             'server' : {
@@ -334,7 +345,7 @@ class ServersTest(unittest.TestCase):
         #self.assertEqual(fault, expected_fault)
 
     def test_create_server_invalid_flavor(self):
-        """Verify that creating a server with an unknown flavor fails"""
+        """Create a server with an unknown flavor"""
 
         post_body = json.dumps({
             'server' : {

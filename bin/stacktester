@@ -10,6 +10,10 @@ import stacktester.issues
 
 
 def main():
+
+    # redirect stderr to stdout
+    sys.stderr = sys.stdout
+
     options, args = parse_options()
     stacktester.config.StackConfig._path = os.path.abspath(options.config)
     nose_argv = [sys.argv[0]]
