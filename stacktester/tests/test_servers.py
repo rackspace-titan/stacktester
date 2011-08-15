@@ -307,7 +307,10 @@ class ServersTest(unittest.TestCase):
         resp, body = self.os.nova.request('PUT', url, body=put_body)
 
         self.assertEqual(resp.status, 200)
-        self.assertEqual(body, '')
+        data = json.loads(body)
+        self.assertEqual(data.keys(), ['server'])
+        self._assert_server_entity(data['server'])
+        self.assertEqual('updatedtestserver', data['server']['name'])
 
         # Get Server information
         resp, body = self.os.nova.request('GET', '/servers/%s' % server_id)
