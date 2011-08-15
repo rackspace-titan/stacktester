@@ -306,9 +306,7 @@ class ServersTest(unittest.TestCase):
         url = '/servers/%s' % server_id
         resp, body = self.os.nova.request('PUT', url, body=put_body)
 
-        #KNOWN-ISSUE
-        #self.assertEqual(resp.status, 202)
-        self.assertEqual(resp.status, 204)
+        self.assertEqual(resp.status, 200)
         self.assertEqual(body, '')
 
         # Get Server information
