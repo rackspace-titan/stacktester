@@ -80,7 +80,7 @@ class EnvironmentConfig(object):
     @property
     def flavor_ref_alt(self):
         """Valid flavorRef to resize images with"""
-        return self.get("flavor_ref", 2);
+        return self.get("flavor_ref_alt", 2);
 
     @property
     def multi_node(self):
