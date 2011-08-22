@@ -22,8 +22,12 @@ class ImagesTest(unittest.TestCase):
     def _assert_image_links(self, image):
         image_id = str(image['id'])
 
-        self_link = 'http://' + os.path.join(self.api_url, 'images', image_id)
-        bookmark_link = 'http://' + os.path.join(self.base_url, 'images', image_id)
+        self_link = 'http://' + os.path.join(self.api_url,
+                                             self.os.config.nova.project_id,
+                                             'images', image_id)
+        bookmark_link = 'http://' + os.path.join(self.base_url,
+                                             self.os.config.nova.project_id,
+                                             'images', image_id)
 
         expected_links = [
             {

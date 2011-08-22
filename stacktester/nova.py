@@ -9,7 +9,7 @@ from stacktester import exceptions
 class API(stacktester.common.http.Client):
     """Barebones Nova HTTP API client."""
 
-    def __init__(self, host, port, base_url, user, api_key):
+    def __init__(self, host, port, base_url, user, api_key, project_id=''):
         """Initialize Nova HTTP API client.
 
         :param host: Hostname/IP of the Nova API to test.
@@ -23,8 +23,11 @@ class API(stacktester.common.http.Client):
         super(API, self).__init__(host, port, base_url)
         self.user = user
         self.api_key = api_key
+        self.project_id = project_id
+        # Default to same as base_url, but will be change on auth
+        self.management_url = self.base_url
 
-    def authenticate(self, user, api_key):
+    def authenticate(self, user, api_key, project_id):
         """Request and return an authentication token from Nova.
 
         :param user: The username we're authenticating.
@@ -33,15 +36,20 @@ class API(stacktester.common.http.Client):
         :raises: KeyError if authentication fails.
 
         """
-        headers = {'X-Auth-User': user, 'X-Auth-Key': api_key}
-        resp, body = super(API, self).request('GET', '', headers=headers)
+        headers = {
+            'X-Auth-User': user,
+            'X-Auth-Key': api_key,
+            'X-Auth-Project-Id': project_id,
+        }
+        resp, body = super(API, self).request('GET', '', headers=headers,
+                                              base_url=self.base_url)
+
         try:
+            self.management_url = resp['x-server-management-url']
             return resp['x-auth-token']
         except KeyError:
             print "Failed to authenticate user"
             raise
-
-        #TODO: use management_url
 
     def _wait_for_entity_status(self, url, entity_name, status, **kwargs):
         """Poll the provided url until expected entity status is returned"""
@@ -93,7 +101,10 @@ class API(stacktester.common.http.Client):
 
         """
         headers = kwargs.get('headers', {})
-        headers['X-Auth-Token'] = self.authenticate(self.user, self.api_key)
+        project_id = kwargs.get('project_id', self.project_id)
+
+        headers['X-Auth-Token'] = self.authenticate(self.user, self.api_key,
+                                                    self.project_id)
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
 
