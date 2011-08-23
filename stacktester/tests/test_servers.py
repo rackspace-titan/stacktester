@@ -35,6 +35,8 @@ class ServersTest(unittest.TestCase):
             'flavor',
             'created',
             'updated',
+            'accessIPv4',
+            'accessIPv6',
 
             #KNOWN-ISSUE lp804093
             'uuid',

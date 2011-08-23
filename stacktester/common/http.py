@@ -52,7 +52,6 @@ class Client(object):
         if 'body' in kwargs:
             params['body'] = kwargs.get('body')
 
-
         req_url = os.path.join(base_url, url.strip('/'))
         resp, body = self.http_obj.request(req_url, method, **params)
         return resp, body
