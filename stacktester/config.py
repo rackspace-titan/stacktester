@@ -35,6 +35,11 @@ class NovaConfig(object):
         return self.get("base_url", "/v1.1")
 
     @property
+    def project_id(self):
+        """Base of the HTTP API URL. Defaults to '/v1.1'."""
+        return self.get("project_id", "admin")
+
+    @property
     def api_key(self):
         """API key to use when authenticating. Defaults to 'admin_key'."""
         return self.get("api_key", "admin_key")

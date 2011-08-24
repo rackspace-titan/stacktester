@@ -37,6 +37,10 @@ class Client(object):
 
 
     def request(self, method, url, **kwargs):
+        # Default to management_url, but can be overridden here 
+        # (for auth requests)
+        base_url = kwargs.get('base_url', self.management_url)
+
         self.http_obj = httplib2.Http()
 
         params = {}
@@ -48,6 +52,6 @@ class Client(object):
         if 'body' in kwargs:
             params['body'] = kwargs.get('body')
 
-        req_url = "%s/%s" % (self.base_url, url)
+        req_url = os.path.join(base_url, url.strip('/'))
         resp, body = self.http_obj.request(req_url, method, **params)
         return resp, body

@@ -11,4 +11,5 @@ class Manager(object):
                                     self.config.nova.port,
                                     self.config.nova.base_url,
                                     self.config.nova.username,
-                                    self.config.nova.api_key)
+                                    self.config.nova.api_key,
+                                    self.config.nova.project_id)

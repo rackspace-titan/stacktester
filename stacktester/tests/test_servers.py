@@ -35,6 +35,8 @@ class ServersTest(unittest.TestCase):
             'flavor',
             'created',
             'updated',
+            'accessIPv4',
+            'accessIPv6',
 
             #KNOWN-ISSUE lp804093
             'uuid',
@@ -54,8 +56,12 @@ class ServersTest(unittest.TestCase):
         api_url = '%s:%s' % (host, port)
         base_url = os.path.join(api_url, self.os.config.nova.base_url)
 
-        self_link = 'http://' + os.path.join(base_url, 'servers', server_id)
-        bookmark_link = 'http://' + os.path.join(api_url, 'servers', server_id)
+        self_link = 'http://' + os.path.join(base_url,
+                                             self.os.config.nova.project_id,
+                                             'servers', server_id)
+        bookmark_link = 'http://' + os.path.join(api_url,
+                                            self.os.config.nova.project_id,
+                                            'servers', server_id)
 
         expected_links = [
             {

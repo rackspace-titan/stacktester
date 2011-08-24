@@ -51,7 +51,9 @@ class FlavorsTest(unittest.TestCase):
         host = self.os.config.nova.host
         port = self.os.config.nova.port
         api_url = '%s:%s' % (host, port)
-        base_url = os.path.join(api_url, self.os.config.nova.base_url)
+        base_url = os.path.join(api_url, self.os.config.nova.base_url,
+                                self.os.config.nova.project_id)
+        api_url = os.path.join(api_url, self.os.config.nova.project_id)
 
         self_link = 'http://' + os.path.join(base_url, 'flavors', flavor_id)
         bookmark_link = 'http://' + os.path.join(api_url, 'flavors', flavor_id)
