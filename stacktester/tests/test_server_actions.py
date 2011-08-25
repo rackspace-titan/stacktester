@@ -71,13 +71,15 @@ class ServerActionsTest(unittest.TestCase):
         uptime = float(output.split().pop(0))
         return time.time() - uptime
 
-    def _write_file(self, filename, contents, password=self.server_password):
+    def _write_file(self, filename, contents, password=None):
         return self._exec_command("echo -n %s > %s" % (contents, filename))
 
-    def _read_file(self, filename, password=self.server_password):
+    def _read_file(self, filename, password=None):
         return self._exec_command("cat %s" % filename, password)
 
-    def _exec_command(self, command, password=self.server_password):
+    def _exec_command(self, command, password=None):
+        if password is None:
+            password = self.server_password
         client = self._get_ssh_client(password)
         return client.exec_command(command)
 
