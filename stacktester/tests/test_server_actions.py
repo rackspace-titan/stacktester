@@ -157,13 +157,15 @@ class ServerActionsTest(unittest.TestCase):
         # SSH into server using new password
         self._assert_ssh_password('test123')
 
-    def test_rebuild_server(self):
+    def test_rebuild(self):
         """Rebuild a server"""
 
-        filename = '/tmp/testfile'
-        contents = 'WORDS'
-        self._write_file(filename, contents)
-        self.assertEqual(self._read_file(filename), contents)
+        FILENAME = '/tmp/testfile'
+        CONTENTS = 'WORDS'
+
+        # write file to server
+        self._write_file(FILENAME, CONTENTS)
+        self.assertEqual(self._read_file(FILENAME), CONTENTS)
 
         # Make rebuild request
         post_body = json.dumps({
@@ -174,8 +176,12 @@ class ServerActionsTest(unittest.TestCase):
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
-        # Ensure correct status transition
+        # check output
         self.assertEqual('202', response['status'])
+        rebuilt_server = json.loads(body)['server']
+        generated_password = rebuilt_server['adminPass']
+
+        # Ensure correct status transition
         # KNOWN-ISSUE
         #self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
         self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
@@ -191,10 +197,52 @@ class ServerActionsTest(unittest.TestCase):
         self.assertTrue(ref_match or id_match)
 
         # SSH into the server to ensure it came back up
-        self._assert_ssh_password()
+        self._assert_ssh_password(generated_password)
 
         # make sure file is gone
-        self.assertEqual(self._read_file(filename), '')
+        self.assertEqual(self._read_file(FILENAME), '')
+
+        # test again with a specified password
+        self._write_file(FILENAME, CONTENTS)
+        self.assertEqual(self._read_file(FILENAME), CONTENTS)
+
+        specified_password = 'some_password'
+
+        # Make rebuild request
+        post_body = json.dumps({
+            'rebuild' : {
+                'imageRef': self.image_ref,
+                'adminPass': specified_password,
+            }
+        })
+        url = '/servers/%s/action' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=post_body)
+
+        # check output
+        self.assertEqual('202', response['status'])
+        rebuilt_server = json.loads(body)['server']
+        self.assertEqual(rebuilt_server['adminPass'], specified_password)
+
+        # Ensure correct status transition
+        # KNOWN-ISSUE
+        #self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
+        self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
+        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+
+        # Treats an issue where we ssh'd in too soon after rebuild
+        time.sleep(30)
+
+        # Check that the instance's imageRef matches the new imageRef
+        server = self.os.nova.get_server(self.server_id)
+        ref_match = self.image_ref == server['image']['links'][0]['href']
+        id_match = self.image_ref == server['image']['id']
+        self.assertTrue(ref_match or id_match)
+
+        # SSH into the server to ensure it came back up
+        self._assert_ssh_password(specified_password)
+
+        # make sure file is gone
+        self.assertEqual(self._read_file(FILENAME), '')
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_confirm(self):
