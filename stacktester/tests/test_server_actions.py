@@ -72,10 +72,12 @@ class ServerActionsTest(unittest.TestCase):
         return time.time() - uptime
 
     def _write_file(self, filename, contents, password=None):
-        return self._exec_command("echo -n %s > %s" % (contents, filename))
+        command = "echo -n %s > %s" % (contents, filename)
+        return self._exec_command(command, password)
 
     def _read_file(self, filename, password=None):
-        return self._exec_command("cat %s" % filename, password)
+        command = "cat %s" % filename
+        return self._exec_command(command, password)
 
     def _exec_command(self, command, password=None):
         if password is None:
