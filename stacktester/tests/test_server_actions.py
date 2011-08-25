@@ -21,6 +21,7 @@ class ServerActionsTest(unittest.TestCase):
         self.flavor_ref = self.os.config.env.flavor_ref
         self.flavor_ref_alt = self.os.config.env.flavor_ref_alt
         self.ssh_timeout = self.os.config.nova.ssh_timeout
+        self.build_timeout = self.os.config.nova.build_timeout
 
         self.server_password = 'testpwd'
         self.server_name = 'testserver'
@@ -59,7 +60,8 @@ class ServerActionsTest(unittest.TestCase):
 
     def _wait_for_status(self, server_id, status):
         try:
-            self.os.nova.wait_for_server_status(server_id, status)
+            self.os.nova.wait_for_server_status(server_id, status,
+                                                timeout=self.build_timeout)
         except exceptions.TimeoutException:
             self.fail("Server failed to change status to %s" % status)
 
@@ -97,10 +99,10 @@ class ServerActionsTest(unittest.TestCase):
 
         # Assert status transition
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBOOT')
+        #self._wait_for_server_status(self.server_id, 'REBOOT')
         ssh_client = self._get_ssh_client(self.server_password)
         ssh_client.connect_until_closed()
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # SSH and verify uptime is less than before
         post_reboot_time_started = self._get_boot_time()
@@ -124,10 +126,10 @@ class ServerActionsTest(unittest.TestCase):
 
         # Assert status transition
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'HARD_REBOOT')
+        #self._wait_for_server_status(self.server_id, 'HARD_REBOOT')
         ssh_client = self._get_ssh_client(self.server_password)
         ssh_client.connect_until_closed()
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # SSH and verify uptime is less than before
         post_reboot_time_started = self._get_boot_time()
@@ -151,8 +153,8 @@ class ServerActionsTest(unittest.TestCase):
         # Assert status transition
         self.assertEqual('202', response['status'])
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'PASSWORD')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #self._wait_for_server_status(self.server_id, 'PASSWORD')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # SSH into server using new password
         self._assert_ssh_password('test123')
@@ -183,9 +185,9 @@ class ServerActionsTest(unittest.TestCase):
 
         # Ensure correct status transition
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
-        self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #self._wait_for_server_status(self.server_id, 'REBUILD')
+        self._wait_for_server_status(self.server_id, 'BUILD')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Treats an issue where we ssh'd in too soon after rebuild
         time.sleep(30)
@@ -225,9 +227,9 @@ class ServerActionsTest(unittest.TestCase):
 
         # Ensure correct status transition
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'REBUILD')
-        self.os.nova.wait_for_server_status(self.server_id, 'BUILD')
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        #self._wait_for_server_status(self.server_id, 'REBUILD')
+        self._wait_for_server_status(self.server_id, 'BUILD')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Treats an issue where we ssh'd in too soon after rebuild
         time.sleep(30)
@@ -259,8 +261,8 @@ class ServerActionsTest(unittest.TestCase):
         # Wait for status transition
         self.assertEqual('202', response['status'])
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
-        self.os.nova.wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
+        #self._wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
+        self._wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
 
         # Ensure API reports new flavor
         server = self.os.nova.get_server(self.server_id)
@@ -278,7 +280,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Wait for status transition
         self.assertEqual('204', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Ensure API still reports new flavor
         server = self.os.nova.get_server(self.server_id)
@@ -300,8 +302,8 @@ class ServerActionsTest(unittest.TestCase):
         # Wait for status transition
         self.assertEqual('202', response['status'])
         # KNOWN-ISSUE
-        #self.os.nova.wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
-        self.os.nova.wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
+        #self._wait_for_server_status(self.server_id, 'VERIFY_RESIZE')
+        self._wait_for_server_status(self.server_id, 'RESIZE-CONFIRM')
 
         # SSH into the server to ensure it came back up
         self._assert_ssh_password()
@@ -319,7 +321,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Assert status transition
         self.assertEqual('202', response['status'])
-        self.os.nova.wait_for_server_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Ensure flavor ref was reverted to original
         server = self.os.nova.get_server(self.server_id)
@@ -334,6 +336,7 @@ class SnapshotTests(unittest.TestCase):
         self.image_ref = self.os.config.env.image_ref
         self.flavor_ref = self.os.config.env.flavor_ref
         self.ssh_timeout = self.os.config.nova.ssh_timeout
+        self.build_timeout = self.os.config.nova.build_timeout
 
         self.server_name = 'testserver'
 
@@ -351,7 +354,8 @@ class SnapshotTests(unittest.TestCase):
 
     def _wait_for_status(self, server_id, status):
         try:
-            self.os.nova.wait_for_server_status(server_id, status)
+            self.os.nova.wait_for_server_status(server_id, status,
+                                                timeout=self.build_timeout)
         except exceptions.TimeoutException:
             self.fail("Server failed to change status to %s" % status)
 
