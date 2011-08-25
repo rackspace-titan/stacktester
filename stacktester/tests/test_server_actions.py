@@ -36,7 +36,7 @@ class ServerActionsTest(unittest.TestCase):
         created_server = self.os.nova.create_server(expected_server)
 
         self.server_id = created_server['id']
-        self._wait_for_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         server = self.os.nova.get_server(self.server_id)
 
@@ -58,7 +58,7 @@ class ServerActionsTest(unittest.TestCase):
         client = self._get_ssh_client(_password)
         self.assertTrue(client.test_connection_auth())
 
-    def _wait_for_status(self, server_id, status):
+    def _wait_for_server_status(self, server_id, status):
         try:
             self.os.nova.wait_for_server_status(server_id, status,
                                                 timeout=self.build_timeout)
@@ -352,7 +352,7 @@ class SnapshotTests(unittest.TestCase):
     def tearDown(self):
         self.os.nova.delete_server(self.server_id)
 
-    def _wait_for_status(self, server_id, status):
+    def _wait_for_server_status(self, server_id, status):
         try:
             self.os.nova.wait_for_server_status(server_id, status,
                                                 timeout=self.build_timeout)
@@ -363,15 +363,13 @@ class SnapshotTests(unittest.TestCase):
         """Create image from an existing server"""
 
         # Wait for server to come up before running this test
-        self._wait_for_status(self.server_id, 'ACTIVE')
+        self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Create snapshot
         image_data = {'name' : 'backup'}
         req_body = json.dumps({'createImage': image_data})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=req_body)
-        print response
-        print body
 
         self.assertEqual(response['status'], '202')
         image_ref = response['location']
