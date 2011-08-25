@@ -71,14 +71,14 @@ class ServerActionsTest(unittest.TestCase):
         uptime = float(output.split().pop(0))
         return time.time() - uptime
 
-    def _write_file(self, filename, contents):
+    def _write_file(self, filename, contents, password=self.server_password):
         return self._exec_command("echo -n %s > %s" % (contents, filename))
 
-    def _read_file(self, filename):
-        return self._exec_command("cat %s" % filename)
+    def _read_file(self, filename, password=self.server_password):
+        return self._exec_command("cat %s" % filename, password)
 
-    def _exec_command(self, command):
-        client = self._get_ssh_client(self.server_password)
+    def _exec_command(self, command, password=self.server_password):
+        client = self._get_ssh_client(password)
         return client.exec_command(command)
 
     def test_reboot_server_soft(self):
@@ -202,11 +202,12 @@ class ServerActionsTest(unittest.TestCase):
         self._assert_ssh_password(generated_password)
 
         # make sure file is gone
-        self.assertEqual(self._read_file(FILENAME), '')
+        self.assertEqual(self._read_file(FILENAME, generated_password), '')
 
         # test again with a specified password
-        self._write_file(FILENAME, CONTENTS)
-        self.assertEqual(self._read_file(FILENAME), CONTENTS)
+        self._write_file(FILENAME, CONTENTS, generated_password)
+        _contents = self._read_file(FILENAME, generated_password)
+        self.assertEqual(_contents, CONTENTS)
 
         specified_password = 'some_password'
 
@@ -244,7 +245,7 @@ class ServerActionsTest(unittest.TestCase):
         self._assert_ssh_password(specified_password)
 
         # make sure file is gone
-        self.assertEqual(self._read_file(FILENAME), '')
+        self.assertEqual(self._read_file(FILENAME, specified_password), '')
 
     @unittest.skipIf(not multi_node, 'Multiple compute nodes required')
     def test_resize_server_confirm(self):
