@@ -41,14 +41,8 @@ class ServersTest(unittest.TestCase):
             #KNOWN-ISSUE lp804093
             'uuid',
 
-            #KNOWN-ISSUE
-            #'primaryIPv4',
-
-            #KNOWN-ISSUE
-            #'primaryIPv6',
-
         ))
-        self.assertEqual(actual_keys, expected_keys)
+        self.assertTrue(expected_keys <= actual_keys)
 
         server_id = str(server['id'])
         host = self.os.config.nova.host
