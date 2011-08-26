@@ -302,21 +302,17 @@ class ServersTest(unittest.TestCase):
             'metadata' : {'testEntry' : 'testValue'},
         }
 
+        # Don't block for the server to build
         created_server = self.os.nova.create_server(expected_server)
 
         self.assertTrue(expected_server['name'], created_server['name'])
         server_id = created_server['id']
 
-        # Wait for server to build
-        self.os.nova.wait_for_server_status(server_id,
-                                            'ACTIVE',
-                                            timeout=self.build_timeout)
-
         # Update name
         new_server = {'name': 'updatedtestserver'}
         put_body = json.dumps({'server': new_server})
         url = '/servers/%s' % server_id
-        updated_server = self.os.nova.request('PUT', url, body=put_body)
+        resp, body = self.os.nova.request('PUT', url, body=put_body)
 
         # Output from update should be a full server
         self.assertEqual(resp.status, 200)
