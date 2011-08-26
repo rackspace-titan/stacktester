@@ -441,7 +441,7 @@ class ServersTest(unittest.TestCase):
 
         # Find IP of server
         try:
-            (_, network) = server['addresses'].popitem()
+            (_, network) = server_addresses.items()[0]
             ip = network[0]['addr']
         except KeyError:
             self.fail("Failed to retrieve IP address from server entity")
