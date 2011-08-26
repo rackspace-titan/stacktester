@@ -88,23 +88,32 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
+        # Ensure attributes were returned
         self.assertEqual(response.status, 202)
-
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])
         created_server = _body['server']
-
         admin_pass = created_server.pop('adminPass')
         self._assert_server_entity(created_server)
         self.assertEqual(expected_server['name'], created_server['name'])
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
+        self.assertEqual(created_server['accessIPv4'], '')
+        self.assertEqual(created_server['accessIPv6'], '')
 
-        self.os.nova.wait_for_server_status(created_server['id'],
+        # Wait for instance to boot
+        server_id = created_server['id']
+        self.os.nova.wait_for_server_status(server_id,
                                             'ACTIVE',
                                             timeout=self.build_timeout)
 
-        server = self.os.nova.get_server(created_server['id'])
+        # Get server again and ensure attributes stuck
+        server = self.os.nova.get_server(server_id)
+        self._assert_server_entity(server)
+        self.assertEqual(server['name'], expected_server['name'])
+        self.assertEqual(server['metadata'], expected_server['metadata'])
+        self.assertEqual(server['accessIPv4'], '')
+        self.assertEqual(server['accessIPv6'], '')
 
         # Find IP of server
         try:
@@ -117,6 +126,39 @@ class ServersTest(unittest.TestCase):
         client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
         self.assertTrue(client.test_connection_auth())
 
+        # Look for 'addresses' attribute on server
+        url = '/servers/%s' % server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(response.status, 200)
+        body = json.loads(body)
+        self.assertTrue('addresses' in body['server'].keys())
+        server_addresses = body['server']['addresses']
+
+        # Addresses should be available from subresource
+        url = '/servers/%s/ips' % server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(response.status, 200)
+        body = json.loads(body)
+        self.assertEqual(body.keys(), ['addresses'])
+        ips_addresses = body['addresses']
+
+        # Ensure both resources return identical information
+        self.assertEqual(server_addresses, ips_addresses)
+
+        # Validate entities within network containers
+        for (network, network_data) in ips_addresses.items():
+            url = '/servers/%s/ips/%s' % (server_id, network)
+            response, body = self.os.nova.request('GET', url)
+            self.assertEqual(response.status, 200)
+            body = json.loads(body)
+            self.assertEqual(body.keys(), [network])
+            self.assertEqual(body[network], network_data)
+
+            # Check each IP entity
+            for ip_data in network_data:
+                self.assertEqual(set(ip_data.keys()), set(['addr', 'version']))
+
+        # Clean up server
         self.os.nova.delete_server(server['id'])
 
     def test_build_server_with_file(self):
@@ -126,18 +168,14 @@ class ServersTest(unittest.TestCase):
 
         expected_server = {
             'name': 'testserver',
-            'metadata': {
-                'key1': 'value1',
-                'key2': 'value2',
-            },
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
             'personality': [
                 {
                     'path': '/etc/test.txt',
                     'contents': base64.b64encode(file_contents),
                 },
             ],
-            'imageRef': self.image_ref,
-            'flavorRef': self.flavor_ref,
         }
 
         post_body = json.dumps({'server': expected_server})
@@ -145,23 +183,24 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
+        # Verify returned server entity
         self.assertEqual(response.status, 202)
-
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])
         created_server = _body['server']
-
         admin_pass = created_server.pop('adminPass', None)
         self._assert_server_entity(created_server)
         self.assertEqual(expected_server['name'], created_server['name'])
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
+        # Wait for instance to boot
         self.os.nova.wait_for_server_status(created_server['id'],
                                             'ACTIVE',
                                             timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
+        self.assertTrue('adminPass' not in server)
 
         # Find IP of server
         try:
@@ -175,6 +214,7 @@ class ServersTest(unittest.TestCase):
         injected_file = client.exec_command('cat /etc/test.txt')
         self.assertEqual(injected_file, file_contents)
 
+        # Clean up created server
         self.os.nova.delete_server(server['id'])
 
     def test_build_server_with_password(self):
@@ -184,13 +224,9 @@ class ServersTest(unittest.TestCase):
 
         expected_server = {
             'name': 'testserver',
-            'metadata': {
-                'key1': 'value1',
-                'key2': 'value2',
-            },
-            'adminPass': server_password,
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
+            'adminPass': server_password,
         }
 
         post_body = json.dumps({'server': expected_server})
@@ -198,12 +234,11 @@ class ServersTest(unittest.TestCase):
                                               '/servers',
                                               body=post_body)
 
+        # Check attributes on the returned entity
         self.assertEqual(response.status, 202)
-
         _body = json.loads(body)
         self.assertEqual(_body.keys(), ['server'])
         created_server = _body['server']
-
         admin_pass = created_server.pop('adminPass', None)
         self._assert_server_entity(created_server)
         self.assertEqual(expected_server['name'], created_server['name'])
@@ -211,11 +246,13 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['metadata'],
                          created_server['metadata'])
 
+        # Wait for instance to boot
         self.os.nova.wait_for_server_status(created_server['id'],
                                             'ACTIVE',
                                             timeout=self.build_timeout)
 
         server = self.os.nova.get_server(created_server['id'])
+        self.assertTrue('adminPass' not in server)
 
         # Find IP of server
         try:
@@ -228,6 +265,7 @@ class ServersTest(unittest.TestCase):
         client = ssh.Client(ip, 'root', server_password, self.ssh_timeout)
         self.assertTrue(client.test_connection_auth())
 
+        # Clean up created server
         self.os.nova.delete_server(server['id'])
 
     def test_delete_server_building(self):
@@ -254,38 +292,14 @@ class ServersTest(unittest.TestCase):
         except exceptions.TimeoutException:
             self.fail("Server deletion timed out")
 
-    def test_delete_server_active(self):
-        """Delete a server after fully built"""
+    def test_server_attribute_manipulation(self):
+        """Modify the attributes of a server"""
 
         expected_server = {
             'name' : 'testserver',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
-        }
-
-        created_server = self.os.nova.create_server(expected_server)
-        server_id = created_server['id']
-
-        self.os.nova.wait_for_server_status(server_id,
-                                            'ACTIVE',
-                                            timeout=self.build_timeout)
-
-        self.os.nova.delete_server(server_id)
-
-        # Poll server until deleted
-        try:
-            url = '/servers/%s' % server_id
-            self.os.nova.poll_request_status('GET', url, 404)
-        except exceptions.TimeoutException:
-            self.fail("Server deletion timed out")
-
-    def test_update_server_name(self):
-        """Change the name of a server"""
-
-        expected_server = {
-            'name' : 'testserver',
-            'imageRef' : self.image_ref,
-            'flavorRef' : self.flavor_ref,
+            'metadata' : {'testEntry' : 'testValue'},
         }
 
         created_server = self.os.nova.create_server(expected_server)
@@ -293,34 +307,187 @@ class ServersTest(unittest.TestCase):
         self.assertTrue(expected_server['name'], created_server['name'])
         server_id = created_server['id']
 
-        # Wait for it to be built
+        # Wait for server to build
         self.os.nova.wait_for_server_status(server_id,
                                             'ACTIVE',
                                             timeout=self.build_timeout)
 
         # Update name
         new_server = {'name': 'updatedtestserver'}
-        put_body = json.dumps({
-            'server': new_server,
-        })
+        put_body = json.dumps({'server': new_server})
         url = '/servers/%s' % server_id
-        resp, body = self.os.nova.request('PUT', url, body=put_body)
+        updated_server = self.os.nova.request('PUT', url, body=put_body)
 
+        # Output from update should be a full server
         self.assertEqual(resp.status, 200)
         data = json.loads(body)
         self.assertEqual(data.keys(), ['server'])
         self._assert_server_entity(data['server'])
         self.assertEqual('updatedtestserver', data['server']['name'])
 
-        # Get Server information
-        resp, body = self.os.nova.request('GET', '/servers/%s' % server_id)
-        self.assertEqual(200, resp.status)
+        # Check that name was changed
+        updated_server = self.os.nova.get_server(server_id)
+        self._assert_server_entity(updated_server)
+        self.assertEqual('updatedtestserver', updated_server['name'])
+
+        # Update accessIPv4
+        new_server = {'accessIPv4': '192.169.0.200'}
+        put_body = json.dumps({'server': new_server})
+        url = '/servers/%s' % server_id
+        resp, body = self.os.nova.request('PUT', url, body=put_body)
+
+        # Output from update should be a full server
+        self.assertEqual(resp.status, 200)
         data = json.loads(body)
         self.assertEqual(data.keys(), ['server'])
         self._assert_server_entity(data['server'])
-        self.assertEqual('updatedtestserver', data['server']['name'])
+        self.assertEqual('192.168.0.200', data['server']['accessIPv4'])
 
-        self.os.nova.delete_server(server_id)
+        # Check that accessIPv4 was changed
+        updated_server = self.os.nova.get_server(server_id)
+        self._assert_server_entity(updated_server)
+        self.assertEqual('192.168.0.200', updated_server['accessIPv4'])
+
+        # Update accessIPv6
+        new_server = {'accessIPv6': 'feed::beef'}
+        put_body = json.dumps({'server': new_server})
+        url = '/servers/%s' % server_id
+        resp, body = self.os.nova.request('PUT', url, body=put_body)
+
+        # Output from update should be a full server
+        self.assertEqual(resp.status, 200)
+        data = json.loads(body)
+        self.assertEqual(data.keys(), ['server'])
+        self._assert_server_entity(data['server'])
+        self.assertEqual('feed::beef', data['server']['accessIPv6'])
+
+        # Check that accessIPv6 was changed
+        updated_server = self.os.nova.get_server(server_id)
+        self._assert_server_entity(updated_server)
+        self.assertEqual('feed::beef', updated_server['accessIPv6'])
+
+        # Ensure metadata is set on create
+        expected = {'testEntry' : 'testValue'}
+        self.assertEqual(expected, data['server']['metadata'])
+
+        # Check metadata subresource
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(200, response.status)
+
+        result = json.loads(body)
+        expected = {
+            'metadata' : {
+                'testEntry' : 'testValue',
+            },
+        }
+        self.assertEqual(expected, result)
+
+        # Ensure metadata container can be modified
+        post_metadata = {
+            'metadata' : {
+                'new_entry1' : 'new_value1',
+                'new_entry2' : 'new_value2',
+            },
+        }
+        post_body = json.dumps(post_metadata)
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('POST', url, body=post_body)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        expected = post_metadata
+        expected['metadata']['testEntry'] = 'testValue'
+        self.assertEqual(expected, result)
+
+        # Ensure values stick
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        expected = post_metadata
+        expected['metadata']['testEntry'] = 'testValue'
+        self.assertEqual(expected, result)
+
+        # Ensure metadata container can be overwritten
+        expected = {
+            'metadata' : {
+                'new_entry3' : 'new_value3',
+                'new_entry4' : 'new_value4',
+            },
+        }
+        url = '/servers/%s/metadata' % self.server_id
+        post_body = json.dumps(expected)
+        response, body = self.os.nova.request('PUT', url, body=post_body)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        expected = post_metadata
+        self.assertEqual(expected, result)
+
+        # Ensure values stick
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        self.assertEqual(expected, result)
+
+        # Set specific key
+        expected_meta = {'meta' : {'new_meta5' : 'new_value5'}}
+        put_body = json.dumps(expected_meta)
+        url = '/servers/%s/metadata/new_meta5' % self.server_id
+        response, body = self.os.nova.request('PUT', url, body=put_body)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        self.assertDictEqual(expected_meta, result)
+
+        # Ensure value sticks
+        expected_metadata = {
+            'metadata' : {
+                'new_meta3' : 'new_value3',
+                'new_meta4' : 'new_value4',
+                'new_meta5' : 'new_value5',
+            },
+        }
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        result = json.loads(body)
+        self.assertDictEqual(expected_metadata, result)
+
+        # Update existing key
+        expected_meta = {'meta' : {'new_meta4' : 'new_meta6'}}
+        put_body = json.dumps(expected_meta)
+        url = '/servers/%s/metadata/new_meta4' % self.server_id
+        response, body = self.os.nova.request('PUT', url, body=put_body)
+        self.assertEqual(200, response.status)
+        result = json.loads(body)
+        self.assertEqual(expected_meta, result)
+
+        # Ensure value sticks
+        expected_metadata = {
+            'metadata' : {
+                'new_meta3' : 'new_value3',
+                'new_meta4' : 'new_value6',
+                'new_meta5' : 'new_value5',
+            },
+        }
+        url = '/servers/%s/metadata' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        result = json.loads(body)
+        self.assertDictEqual(expected_metadata, result)
+
+        # Delete a certain key
+        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        response, body = self.os.nova.request('DELETE', url)
+        self.assertEquals(204, response.status)
+
+        # Make sure the key is gone
+        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        response, body = self.os.nova.request('GET', url)
+        self.assertEquals(404, response.status)
+
+        # Delete a nonexistant key
+        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        response, body = self.os.nova.request('DELETE', url)
+        self.assertEquals(404, response.status)
 
     def test_create_server_invalid_image(self):
         """Create a server with an unknown image"""
