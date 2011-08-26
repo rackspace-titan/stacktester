@@ -382,8 +382,8 @@ class ServersTest(unittest.TestCase):
         # Ensure metadata container can be modified
         expected = {
             'metadata' : {
-                'new_entry1' : 'new_value1',
-                'new_entry2' : 'new_value2',
+                'new_meta1' : 'new_value1',
+                'new_meta2' : 'new_value2',
             },
         }
         post_body = json.dumps(expected)
@@ -404,8 +404,8 @@ class ServersTest(unittest.TestCase):
         # Ensure metadata container can be overwritten
         expected = {
             'metadata' : {
-                'new_entry3' : 'new_value3',
-                'new_entry4' : 'new_value4',
+                'new_meta3' : 'new_value3',
+                'new_meta4' : 'new_value4',
             },
         }
         url = '/servers/%s/metadata' % server_id
