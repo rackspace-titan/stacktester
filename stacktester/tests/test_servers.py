@@ -76,7 +76,7 @@ class ServersTest(unittest.TestCase):
         file_contents = 'testing'
 
         expected_server = {
-            'name': 'testserver',
+            'name': 'stacktester1',
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
             'personality': [
@@ -129,7 +129,7 @@ class ServersTest(unittest.TestCase):
         server_password = 'testpwd'
 
         expected_server = {
-            'name': 'testserver',
+            'name': 'stacktester1',
             'imageRef': self.image_ref,
             'flavorRef': self.flavor_ref,
             'adminPass': server_password,
@@ -176,7 +176,7 @@ class ServersTest(unittest.TestCase):
 
         # Make create server request
         server = {
-            'name' : 'testserver',
+            'name' : 'stacktester1',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
         }
@@ -200,7 +200,7 @@ class ServersTest(unittest.TestCase):
 
         # Don't block for the server until later
         expected_server = {
-            'name' : 'testserver',
+            'name' : 'stacktester1',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
             'metadata' : {'testEntry' : 'testValue'},
@@ -233,7 +233,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(server['metadata'], created_server['metadata'])
 
         # Update name
-        new_server = {'name': 'updatedtestserver'}
+        new_server = {'name': 'stacktester2'}
         put_body = json.dumps({'server': new_server})
         url = '/servers/%s' % server_id
         resp, body = self.os.nova.request('PUT', url, body=put_body)
@@ -243,12 +243,12 @@ class ServersTest(unittest.TestCase):
         data = json.loads(body)
         self.assertEqual(data.keys(), ['server'])
         self._assert_server_entity(data['server'])
-        self.assertEqual('updatedtestserver', data['server']['name'])
+        self.assertEqual('stacktester2', data['server']['name'])
 
         # Check that name was changed
         updated_server = self.os.nova.get_server(server_id)
         self._assert_server_entity(updated_server)
-        self.assertEqual('updatedtestserver', updated_server['name'])
+        self.assertEqual('stacktester2', updated_server['name'])
 
         # Update accessIPv4
         new_server = {'accessIPv4': '192.168.0.200'}
@@ -458,7 +458,7 @@ class ServersTest(unittest.TestCase):
 
         post_body = json.dumps({
             'server' : {
-                'name' : 'testserver',
+                'name' : 'stacktester1',
                 'imageRef' : -1,
                 'flavorRef' : self.flavor_ref,
             }
@@ -483,7 +483,7 @@ class ServersTest(unittest.TestCase):
 
         post_body = json.dumps({
             'server' : {
-                'name' : 'testserver',
+                'name' : 'stacktester1',
                 'imageRef' : self.image_ref,
                 'flavorRef' : -1,
             }

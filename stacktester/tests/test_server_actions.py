@@ -24,7 +24,7 @@ class ServerActionsTest(unittest.TestCase):
         self.build_timeout = self.os.config.nova.build_timeout
 
         self.server_password = 'testpwd'
-        self.server_name = 'testserver'
+        self.server_name = 'stacktester1'
 
         expected_server = {
             'name' : self.server_name,
@@ -343,7 +343,7 @@ class SnapshotTests(unittest.TestCase):
         self.ssh_timeout = self.os.config.nova.ssh_timeout
         self.build_timeout = self.os.config.nova.build_timeout
 
-        self.server_name = 'testserver'
+        self.server_name = 'stacktester1'
 
         expected_server = {
             'name' : self.server_name,
