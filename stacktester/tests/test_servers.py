@@ -445,7 +445,7 @@ class ServersTest(unittest.TestCase):
         self.assertDictEqual(expected_metadata, result)
 
         # Update existing key
-        expected_meta = {'meta' : {'new_meta4' : 'new_meta6'}}
+        expected_meta = {'meta' : {'new_meta4' : 'new_value6'}}
         put_body = json.dumps(expected_meta)
         url = '/servers/%s/metadata/new_meta4' % server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
