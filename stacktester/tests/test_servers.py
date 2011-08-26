@@ -327,7 +327,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual('updatedtestserver', updated_server['name'])
 
         # Update accessIPv4
-        new_server = {'accessIPv4': '192.169.0.200'}
+        new_server = {'accessIPv4': '192.168.0.200'}
         put_body = json.dumps({'server': new_server})
         url = '/servers/%s' % server_id
         resp, body = self.os.nova.request('PUT', url, body=put_body)
@@ -367,7 +367,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected, data['server']['metadata'])
 
         # Check metadata subresource
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
 
@@ -387,7 +387,7 @@ class ServersTest(unittest.TestCase):
             },
         }
         post_body = json.dumps(post_metadata)
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(200, response.status)
         result = json.loads(body)
@@ -396,7 +396,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
         # Ensure values stick
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
         result = json.loads(body)
@@ -411,7 +411,7 @@ class ServersTest(unittest.TestCase):
                 'new_entry4' : 'new_value4',
             },
         }
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         post_body = json.dumps(expected)
         response, body = self.os.nova.request('PUT', url, body=post_body)
         self.assertEqual(200, response.status)
@@ -420,7 +420,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
         # Ensure values stick
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
         result = json.loads(body)
@@ -429,7 +429,7 @@ class ServersTest(unittest.TestCase):
         # Set specific key
         expected_meta = {'meta' : {'new_meta5' : 'new_value5'}}
         put_body = json.dumps(expected_meta)
-        url = '/servers/%s/metadata/new_meta5' % self.server_id
+        url = '/servers/%s/metadata/new_meta5' % server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
         self.assertEqual(200, response.status)
         result = json.loads(body)
@@ -443,7 +443,7 @@ class ServersTest(unittest.TestCase):
                 'new_meta5' : 'new_value5',
             },
         }
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('GET', url)
         result = json.loads(body)
         self.assertDictEqual(expected_metadata, result)
@@ -451,7 +451,7 @@ class ServersTest(unittest.TestCase):
         # Update existing key
         expected_meta = {'meta' : {'new_meta4' : 'new_meta6'}}
         put_body = json.dumps(expected_meta)
-        url = '/servers/%s/metadata/new_meta4' % self.server_id
+        url = '/servers/%s/metadata/new_meta4' % server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
         self.assertEqual(200, response.status)
         result = json.loads(body)
@@ -465,23 +465,23 @@ class ServersTest(unittest.TestCase):
                 'new_meta5' : 'new_value5',
             },
         }
-        url = '/servers/%s/metadata' % self.server_id
+        url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('GET', url)
         result = json.loads(body)
         self.assertDictEqual(expected_metadata, result)
 
         # Delete a certain key
-        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        url = '/servers/%s/metadata/new_meta3' % server_id
         response, body = self.os.nova.request('DELETE', url)
         self.assertEquals(204, response.status)
 
         # Make sure the key is gone
-        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        url = '/servers/%s/metadata/new_meta3' % server_id
         response, body = self.os.nova.request('GET', url)
         self.assertEquals(404, response.status)
 
         # Delete a nonexistant key
-        url = '/servers/%s/metadata/new_meta3' % self.server_id
+        url = '/servers/%s/metadata/new_meta3' % server_id
         response, body = self.os.nova.request('DELETE', url)
         self.assertEquals(404, response.status)
 
