@@ -1,5 +1,6 @@
+
 import time
-import socket 
+import socket
 import warnings
 
 with warnings.catch_warnings():
@@ -25,7 +26,7 @@ class Client(object):
 
         while not self._is_timed_out(self.timeout, _start_time):
             try:
-                ssh.connect(self.host, username=self.username, 
+                ssh.connect(self.host, username=self.username,
                     password=self.password, look_for_keys=False,
                     timeout=self.timeout)
                 _timeout = False

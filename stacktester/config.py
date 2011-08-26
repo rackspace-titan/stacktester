@@ -55,7 +55,6 @@ class NovaConfig(object):
         return float(self.get("build_timeout", 300))
 
 
-
 class EnvironmentConfig(object):
     def __init__(self, conf):
         """Initialize a Environment-specific configuration object."""
@@ -70,22 +69,22 @@ class EnvironmentConfig(object):
     @property
     def image_ref(self):
         """Valid imageRef to use """
-        return self.get("image_ref", 3);
+        return self.get("image_ref", 3)
 
     @property
     def image_ref_alt(self):
         """Valid imageRef to rebuild images with"""
-        return self.get("image_ref_alt", 3);
+        return self.get("image_ref_alt", 3)
 
     @property
     def flavor_ref(self):
         """Valid flavorRef to use"""
-        return self.get("flavor_ref", 1);
+        return self.get("flavor_ref", 1)
 
     @property
     def flavor_ref_alt(self):
         """Valid flavorRef to resize images with"""
-        return self.get("flavor_ref_alt", 2);
+        return self.get("flavor_ref_alt", 2)
 
     @property
     def multi_node(self):

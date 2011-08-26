@@ -14,7 +14,8 @@ class ImagesTest(unittest.TestCase):
         host = self.os.config.nova.host
         port = self.os.config.nova.port
         self.base_url = '%s:%s' % (host, port)
-        self.api_url = os.path.join(self.base_url, self.os.config.nova.base_url)
+        self.api_url = os.path.join(self.base_url,
+                                    self.os.config.nova.base_url)
 
     def tearDown(self):
         pass
