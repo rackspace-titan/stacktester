@@ -35,9 +35,8 @@ class Client(object):
 
         self.poll_request(method, url, check_response, **kwargs)
 
-
     def request(self, method, url, **kwargs):
-        # Default to management_url, but can be overridden here 
+        # Default to management_url, but can be overridden here
         # (for auth requests)
         base_url = kwargs.get('base_url', self.management_url)
 
@@ -46,7 +45,7 @@ class Client(object):
         params = {}
         params['headers'] = {'User-Agent': self.USER_AGENT}
         params['headers'].update(kwargs.get('headers', {}))
-        if 'Content-Type' not in params.get('headers',{}):
+        if 'Content-Type' not in params.get('headers', {}):
             params['headers']['Content-Type'] = 'application/json'
 
         if 'body' in kwargs:

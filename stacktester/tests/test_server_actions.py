@@ -27,10 +27,10 @@ class ServerActionsTest(unittest.TestCase):
         self.server_name = 'stacktester1'
 
         expected_server = {
-            'name' : self.server_name,
-            'imageRef' : self.image_ref,
-            'flavorRef' : self.flavor_ref,
-            'adminPass' : self.server_password,
+            'name': self.server_name,
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
+            'adminPass': self.server_password,
         }
 
         created_server = self.os.nova.create_server(expected_server)
@@ -92,11 +92,7 @@ class ServerActionsTest(unittest.TestCase):
         initial_time_started = self._get_boot_time()
 
         # Make reboot request
-        post_body = json.dumps({
-            'reboot' : {
-                'type' : 'SOFT',
-            }
-        })
+        post_body = json.dumps({'reboot': {'type': 'SOFT'}})
         url = "/servers/%s/action" % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(response['status'], '202')
@@ -119,11 +115,7 @@ class ServerActionsTest(unittest.TestCase):
         initial_time_started = self._get_boot_time()
 
         # Make reboot request
-        post_body = json.dumps({
-            'reboot' : {
-                'type' : 'HARD',
-            }
-        })
+        post_body = json.dumps({'reboot': {'type': 'HARD'}})
         url = "/servers/%s/action" % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(response['status'], '202')
@@ -146,11 +138,7 @@ class ServerActionsTest(unittest.TestCase):
         self._assert_ssh_password()
 
         # Change server password
-        post_body = json.dumps({
-            'changePassword' : {
-                'adminPass' : 'test123',
-            }
-        })
+        post_body = json.dumps({'changePassword': {'adminPass': 'test123'}})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -174,11 +162,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertEqual(self._read_file(FILENAME), CONTENTS)
 
         # Make rebuild request
-        post_body = json.dumps({
-            'rebuild' : {
-                'imageRef' : self.image_ref_alt,
-            }
-        })
+        post_body = json.dumps({'rebuild': {'imageRef': self.image_ref_alt}})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -217,7 +201,7 @@ class ServerActionsTest(unittest.TestCase):
 
         # Make rebuild request
         post_body = json.dumps({
-            'rebuild' : {
+            'rebuild': {
                 'imageRef': self.image_ref,
                 'adminPass': specified_password,
             }
@@ -255,11 +239,7 @@ class ServerActionsTest(unittest.TestCase):
     def test_resize_server_confirm(self):
         """Resize a server"""
         # Make resize request
-        post_body = json.dumps({
-            'resize' : {
-                'flavorRef': self.flavor_ref_alt,
-            }
-        })
+        post_body = json.dumps({'resize': {'flavorRef': self.flavor_ref_alt}})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -277,9 +257,7 @@ class ServerActionsTest(unittest.TestCase):
         self._assert_ssh_password()
 
         # Make confirmResize request
-        post_body = json.dumps({
-            'confirmResize' : 'null'
-        })
+        post_body = json.dumps({'confirmResize': 'null'})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -296,11 +274,7 @@ class ServerActionsTest(unittest.TestCase):
         """Resize a server, then revert"""
 
         # Make resize request
-        post_body = json.dumps({
-            'resize' : {
-                'flavorRef': self.flavor_ref_alt,
-            }
-        })
+        post_body = json.dumps({'resize': {'flavorRef': self.flavor_ref_alt}})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -318,9 +292,7 @@ class ServerActionsTest(unittest.TestCase):
         self.assertEqual(self.flavor_ref_alt, server['flavor']['id'])
 
         # Make revertResize request
-        post_body = json.dumps({
-            'revertResize' : 'null'
-        })
+        post_body = json.dumps({'revertResize': 'null'})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
 
@@ -346,9 +318,9 @@ class SnapshotTests(unittest.TestCase):
         self.server_name = 'stacktester1'
 
         expected_server = {
-            'name' : self.server_name,
-            'imageRef' : self.image_ref,
-            'flavorRef' : self.flavor_ref,
+            'name': self.server_name,
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
         }
 
         created_server = self.os.nova.create_server(expected_server)
@@ -371,14 +343,14 @@ class SnapshotTests(unittest.TestCase):
         self._wait_for_server_status(self.server_id, 'ACTIVE')
 
         # Create snapshot
-        image_data = {'name' : 'backup'}
+        image_data = {'name': 'backup'}
         req_body = json.dumps({'createImage': image_data})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=req_body)
 
         self.assertEqual(response['status'], '202')
         image_ref = response['location']
-        snapshot_id = image_ref.rsplit('/',1)[1]
+        snapshot_id = image_ref.rsplit('/', 1)[1]
 
         # Get snapshot and check its attributes
         resp, body = self.os.nova.request('GET', '/images/%s' % snapshot_id)
@@ -397,7 +369,7 @@ class SnapshotTests(unittest.TestCase):
         """Ensure inability to snapshot server in BUILD state"""
 
         # Create snapshot
-        req_body = json.dumps({'createImage': {'name' : 'backup'}})
+        req_body = json.dumps({'createImage': {'name': 'backup'}})
         url = '/servers/%s/action' % self.server_id
         response, body = self.os.nova.request('POST', url, body=req_body)
 

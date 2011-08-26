@@ -176,9 +176,9 @@ class ServersTest(unittest.TestCase):
 
         # Make create server request
         server = {
-            'name' : 'stacktester1',
-            'imageRef' : self.image_ref,
-            'flavorRef' : self.flavor_ref,
+            'name': 'stacktester1',
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
         }
         created_server = self.os.nova.create_server(server)
 
@@ -200,10 +200,10 @@ class ServersTest(unittest.TestCase):
 
         # Don't block for the server until later
         expected_server = {
-            'name' : 'stacktester1',
-            'imageRef' : self.image_ref,
-            'flavorRef' : self.flavor_ref,
-            'metadata' : {'testEntry' : 'testValue'},
+            'name': 'stacktester1',
+            'imageRef': self.image_ref,
+            'flavorRef': self.flavor_ref,
+            'metadata': {'testEntry': 'testValue'},
         }
         post_body = json.dumps({'server': expected_server})
         response, body = self.os.nova.request('POST',
@@ -292,18 +292,14 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(200, response.status)
 
         result = json.loads(body)
-        expected = {
-            'metadata' : {
-                'testEntry' : 'testValue',
-            },
-        }
+        expected = {'metadata': {'testEntry': 'testValue'}}
         self.assertEqual(expected, result)
 
         # Ensure metadata container can be modified
         expected = {
-            'metadata' : {
-                'new_meta1' : 'new_value1',
-                'new_meta2' : 'new_value2',
+            'metadata': {
+                'new_meta1': 'new_value1',
+                'new_meta2': 'new_value2',
             },
         }
         post_body = json.dumps(expected)
@@ -323,9 +319,9 @@ class ServersTest(unittest.TestCase):
 
         # Ensure metadata container can be overwritten
         expected = {
-            'metadata' : {
-                'new_meta3' : 'new_value3',
-                'new_meta4' : 'new_value4',
+            'metadata': {
+                'new_meta3': 'new_value3',
+                'new_meta4': 'new_value4',
             },
         }
         url = '/servers/%s/metadata' % server_id
@@ -343,7 +339,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
         # Set specific key
-        expected_meta = {'meta' : {'new_meta5' : 'new_value5'}}
+        expected_meta = {'meta': {'new_meta5': 'new_value5'}}
         put_body = json.dumps(expected_meta)
         url = '/servers/%s/metadata/new_meta5' % server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
@@ -353,10 +349,10 @@ class ServersTest(unittest.TestCase):
 
         # Ensure value sticks
         expected_metadata = {
-            'metadata' : {
-                'new_meta3' : 'new_value3',
-                'new_meta4' : 'new_value4',
-                'new_meta5' : 'new_value5',
+            'metadata': {
+                'new_meta3': 'new_value3',
+                'new_meta4': 'new_value4',
+                'new_meta5': 'new_value5',
             },
         }
         url = '/servers/%s/metadata' % server_id
@@ -365,7 +361,7 @@ class ServersTest(unittest.TestCase):
         self.assertDictEqual(expected_metadata, result)
 
         # Update existing key
-        expected_meta = {'meta' : {'new_meta4' : 'new_value6'}}
+        expected_meta = {'meta': {'new_meta4': 'new_value6'}}
         put_body = json.dumps(expected_meta)
         url = '/servers/%s/metadata/new_meta4' % server_id
         response, body = self.os.nova.request('PUT', url, body=put_body)
@@ -375,10 +371,10 @@ class ServersTest(unittest.TestCase):
 
         # Ensure value sticks
         expected_metadata = {
-            'metadata' : {
-                'new_meta3' : 'new_value3',
-                'new_meta4' : 'new_value6',
-                'new_meta5' : 'new_value5',
+            'metadata': {
+                'new_meta3': 'new_value3',
+                'new_meta4': 'new_value6',
+                'new_meta5': 'new_value5',
             },
         }
         url = '/servers/%s/metadata' % server_id
@@ -466,10 +462,10 @@ class ServersTest(unittest.TestCase):
         """Create a server with an unknown image"""
 
         post_body = json.dumps({
-            'server' : {
-                'name' : 'stacktester1',
-                'imageRef' : -1,
-                'flavorRef' : self.flavor_ref,
+            'server': {
+                'name': 'stacktester1',
+                'imageRef': -1,
+                'flavorRef': self.flavor_ref,
             }
         })
 
@@ -491,10 +487,10 @@ class ServersTest(unittest.TestCase):
         """Create a server with an unknown flavor"""
 
         post_body = json.dumps({
-            'server' : {
-                'name' : 'stacktester1',
-                'imageRef' : self.image_ref,
-                'flavorRef' : -1,
+            'server': {
+                'name': 'stacktester1',
+                'imageRef': self.image_ref,
+                'flavorRef': -1,
             }
         })
 
