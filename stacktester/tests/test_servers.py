@@ -198,18 +198,12 @@ class ServersTest(unittest.TestCase):
     def test_build_server(self):
         """Build and manipulate a server"""
 
+        # Don't block for the server until later
         expected_server = {
             'name' : 'testserver',
             'imageRef' : self.image_ref,
             'flavorRef' : self.flavor_ref,
             'metadata' : {'testEntry' : 'testValue'},
-        }
-
-        # Don't block for the server until later
-        expected_server = {
-            'name': 'testserver',
-            'imageRef': self.image_ref,
-            'flavorRef': self.flavor_ref,
         }
         post_body = json.dumps({'server': expected_server})
         response, body = self.os.nova.request('POST',
@@ -226,6 +220,8 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected_server['name'], created_server['name'])
         self.assertEqual(created_server['accessIPv4'], '')
         self.assertEqual(created_server['accessIPv6'], '')
+        self.assertEqual(expected_server['metadata'],
+                         created_server['metadata'])
         server_id = created_server['id']
 
         # Get server again and ensure attributes stuck
@@ -234,6 +230,7 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(server['name'], expected_server['name'])
         self.assertEqual(server['accessIPv4'], '')
         self.assertEqual(server['accessIPv6'], '')
+        self.assertEqual(server['metadata'], created_server['metadata'])
 
         # Update name
         new_server = {'name': 'updatedtestserver'}
@@ -288,10 +285,6 @@ class ServersTest(unittest.TestCase):
         updated_server = self.os.nova.get_server(server_id)
         self._assert_server_entity(updated_server)
         self.assertEqual('feed::beef', updated_server['accessIPv6'])
-
-        # Ensure metadata is set on create
-        expected = {'testEntry' : 'testValue'}
-        self.assertEqual(expected, data['server']['metadata'])
 
         # Check metadata subresource
         url = '/servers/%s/metadata' % server_id
