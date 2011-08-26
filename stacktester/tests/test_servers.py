@@ -450,8 +450,17 @@ class ServersTest(unittest.TestCase):
         client = ssh.Client(ip, 'root', admin_pass, self.ssh_timeout)
         self.assertTrue(client.test_connection_auth())
 
-        # Clean up created server
-        self.os.nova.delete_server(server['id'])
+        # Delete server
+        url = '/servers/%s' % server_id
+        response, body = self.os.nova.request('DELETE', url)
+        self.assertEqual(response.status, 204)
+
+        # Poll server until deleted
+        try:
+            url = '/servers/%s' % server_id
+            self.os.nova.poll_request_status('GET', url, 404)
+        except exceptions.TimeoutException:
+            self.fail("Server deletion timed out")
 
     def test_create_server_invalid_image(self):
         """Create a server with an unknown image"""
