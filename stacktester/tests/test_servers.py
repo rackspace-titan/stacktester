@@ -380,18 +380,17 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(expected, result)
 
         # Ensure metadata container can be modified
-        post_metadata = {
+        expected = {
             'metadata' : {
                 'new_entry1' : 'new_value1',
                 'new_entry2' : 'new_value2',
             },
         }
-        post_body = json.dumps(post_metadata)
+        post_body = json.dumps(expected)
         url = '/servers/%s/metadata' % server_id
         response, body = self.os.nova.request('POST', url, body=post_body)
         self.assertEqual(200, response.status)
         result = json.loads(body)
-        expected = post_metadata
         expected['metadata']['testEntry'] = 'testValue'
         self.assertEqual(expected, result)
 
@@ -400,8 +399,6 @@ class ServersTest(unittest.TestCase):
         response, body = self.os.nova.request('GET', url)
         self.assertEqual(200, response.status)
         result = json.loads(body)
-        expected = post_metadata
-        expected['metadata']['testEntry'] = 'testValue'
         self.assertEqual(expected, result)
 
         # Ensure metadata container can be overwritten
@@ -416,7 +413,6 @@ class ServersTest(unittest.TestCase):
         response, body = self.os.nova.request('PUT', url, body=post_body)
         self.assertEqual(200, response.status)
         result = json.loads(body)
-        expected = post_metadata
         self.assertEqual(expected, result)
 
         # Ensure values stick
