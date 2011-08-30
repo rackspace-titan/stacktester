@@ -1,5 +1,6 @@
 import json
 import os
+import re
 
 import unittest2 as unittest
 
@@ -13,9 +14,6 @@ class ImagesTest(unittest.TestCase):
 
         host = self.os.config.nova.host
         port = self.os.config.nova.port
-        self.base_url = '%s:%s' % (host, port)
-        self.api_url = os.path.join(self.base_url,
-                                    self.os.config.nova.base_url)
 
     def tearDown(self):
         pass
@@ -23,12 +21,11 @@ class ImagesTest(unittest.TestCase):
     def _assert_image_links(self, image):
         image_id = str(image['id'])
 
-        self_link = 'http://' + os.path.join(self.api_url,
-                                             self.os.config.nova.project_id,
-                                             'images', image_id)
-        bookmark_link = 'http://' + os.path.join(self.base_url,
-                                             self.os.config.nova.project_id,
-                                             'images', image_id)
+        mgmt_url = self.os.nova.management_url
+        bmk_url = re.sub(r'v1.1\/', r'', mgmt_url)
+
+        self_link = os.path.join(mgmt_url, 'images', image_id)
+        bookmark_link = os.path.join(bmk_url, 'images', image_id)
 
         expected_links = [
             {

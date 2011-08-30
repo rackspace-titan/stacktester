@@ -27,6 +27,7 @@ class API(stacktester.common.http.Client):
         self.project_id = project_id
         self.management_url = ""
         self.service_name = service_name
+        self.token = None
 
     def authenticate(self, user, api_key, project_id):
         """Request and return an authentication token from Nova.
@@ -51,7 +52,7 @@ class API(stacktester.common.http.Client):
         try:
             mgmt_url = resp['x-server-management-url']
             mgmt_url = mgmt_url.rstrip('/').rsplit('/', 1)[0]
-            self.management_url = mgmt_url + '/v1.1'
+            self.management_url = mgmt_url + '/v1.1/' + project_id
             self.token = resp['x-auth-token']
             return self.token
         except KeyError:
@@ -77,7 +78,7 @@ class API(stacktester.common.http.Client):
         }
 
         headers = {'Content-Type': 'application/json'}
-        resp, body = super(API, self).request('GET', '', headers=headers,
+        resp, body = super(API, self).request('POST', '', headers=headers,
                                               body=json.dumps(creds),
                                               base_url=self.auth_base_url)
         try:
@@ -145,7 +146,7 @@ class API(stacktester.common.http.Client):
         headers = kwargs.get('headers', {})
         project_id = kwargs.get('project_id', self.project_id)
 
-        if self.auth_base_path.find('v2.0/tokens') > -1:
+        if self.auth_base_url.find('v2.0/tokens') > -1:
             headers['X-Auth-Token'] = self.authenticate_keystone(self.user,
                                                         self.api_key,
                                                         self.project_id)

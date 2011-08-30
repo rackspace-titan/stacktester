@@ -30,9 +30,9 @@ class NovaConfig(object):
         return self.get("user", "admin")
 
     @property
-    def auth_base_url(self):
+    def auth_base_path(self):
         """Base of the HTTP API URL. Defaults to '/v2.0/tokens'."""
-        return self.get("auth_base_url", "/v2.0/tokens")
+        return self.get("auth_base_path", "/v2.0/tokens")
 
     @property
     def service_name(self):
