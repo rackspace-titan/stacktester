@@ -9,9 +9,9 @@ class Client(object):
 
     USER_AGENT = 'python-nova_test_client'
 
-    def __init__(self, host='localhost', port=80, base_url=''):
+    def __init__(self, host='localhost', port=80, auth_base_path=''):
         #TODO: join these more robustly
-        self.base_url = "http://%s:%s/%s" % (host, port, base_url)
+        self.auth_base_url = "http://%s:%s/%s" % (host, port, auth_base_path)
 
     def poll_request(self, method, url, check_response, **kwargs):
 

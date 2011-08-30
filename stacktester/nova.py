@@ -9,23 +9,24 @@ from stacktester import exceptions
 class API(stacktester.common.http.Client):
     """Barebones Nova HTTP API client."""
 
-    def __init__(self, host, port, base_url, user, api_key, project_id=''):
+    def __init__(self, host, port, auth_base_path, user, api_key,
+                 project_id='', service_name="nova"):
         """Initialize Nova HTTP API client.
 
         :param host: Hostname/IP of the Nova API to test.
         :param port: Port of the Nova API to test.
-        :param base_url: Version identifier (normally /v1.0 or /v1.1)
+        :param auth_base_path: Version identifier (normally /v1.0 or /v1.1)
         :param user: The username to use for tests.
         :param api_key: The API key of the user.
         :returns: None
 
         """
-        super(API, self).__init__(host, port, base_url)
+        super(API, self).__init__(host, port, auth_base_path)
         self.user = user
         self.api_key = api_key
         self.project_id = project_id
-        # Default to same as base_url, but will be change on auth
-        self.management_url = self.base_url
+        self.management_url = ""
+        self.service_name = service_name
 
     def authenticate(self, user, api_key, project_id):
         """Request and return an authentication token from Nova.
@@ -36,17 +37,58 @@ class API(stacktester.common.http.Client):
         :raises: KeyError if authentication fails.
 
         """
+        if self.token:
+            return self.token
+
         headers = {
             'X-Auth-User': user,
             'X-Auth-Key': api_key,
             'X-Auth-Project-Id': project_id,
         }
         resp, body = super(API, self).request('GET', '', headers=headers,
-                                              base_url=self.base_url)
+                                              base_url=self.auth_base_url)
 
         try:
-            self.management_url = resp['x-server-management-url']
-            return resp['x-auth-token']
+            mgmt_url = resp['x-server-management-url']
+            mgmt_url = mgmt_url.rstrip('/').rsplit('/', 1)[0]
+            self.management_url = mgmt_url + '/v1.1'
+            self.token = resp['x-auth-token']
+            return self.token
+        except KeyError:
+            print "Failed to authenticate user"
+            raise
+
+    def authenticate_keystone(self, user, api_key, project_id):
+        """Request and return an authentication token from Keystone.
+
+        :param user: The username we're authenticating.
+        :param api_key: The API key for the user we're authenticating.
+        :returns: Authentication token (string)
+        :raises: KeyError if authentication fails.
+
+        """
+        if self.token:
+            return self.token
+
+        creds = {
+            'passwordCredentials': {
+                'username': user,
+                'password': api_key}
+        }
+
+        headers = {'Content-Type': 'application/json'}
+        resp, body = super(API, self).request('GET', '', headers=headers,
+                                              body=json.dumps(creds),
+                                              base_url=self.auth_base_url)
+        try:
+            auth_data = json.loads(body)['auth']
+            self.token = auth_data['token']['id']
+            svc_name=self.service_name
+            mgmt_url = auth_data['serviceCatalog'][svc_name][0]['publicURL']
+            mgmt_url = mgmt_url.rstrip('/').rsplit('/', 1)[0]
+            #NOTE: project_id == tenant_id in nova
+            self.management_url = mgmt_url + '/v1.1/' + project_id
+            return self.token
         except KeyError:
             print "Failed to authenticate user"
             raise
@@ -103,8 +145,15 @@ class API(stacktester.common.http.Client):
         headers = kwargs.get('headers', {})
         project_id = kwargs.get('project_id', self.project_id)
 
-        headers['X-Auth-Token'] = self.authenticate(self.user, self.api_key,
-                                                    self.project_id)
+        if self.auth_base_path.find('v2.0/tokens') > -1:
+            headers['X-Auth-Token'] = self.authenticate_keystone(self.user,
+                                                        self.api_key,
+                                                        self.project_id)
+        else:
+            headers['X-Auth-Token'] = self.authenticate(self.user,
+                                                        self.api_key,
+                                                        self.project_id)
+ 
         kwargs['headers'] = headers
         return super(API, self).request(method, url, **kwargs)
 

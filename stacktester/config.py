@@ -30,9 +30,14 @@ class NovaConfig(object):
         return self.get("user", "admin")
 
     @property
-    def base_url(self):
-        """Base of the HTTP API URL. Defaults to '/v1.1'."""
-        return self.get("base_url", "/v1.1")
+    def auth_base_url(self):
+        """Base of the HTTP API URL. Defaults to '/v2.0/tokens'."""
+        return self.get("auth_base_url", "/v2.0/tokens")
+
+    @property
+    def service_name(self):
+        """The service catalog name. Defaults to 'nova'"""
+        return self.get("service_name", "nova")
 
     @property
     def project_id(self):
