@@ -2,6 +2,7 @@
 import base64
 import json
 import os
+import re
 
 import unittest2 as unittest
 
@@ -47,15 +48,11 @@ class ServersTest(unittest.TestCase):
         server_id = str(server['id'])
         host = self.os.config.nova.host
         port = self.os.config.nova.port
-        api_url = '%s:%s' % (host, port)
-        base_url = os.path.join(api_url, self.os.config.nova.base_url)
+        mgmt_url = self.os.nova.management_url
+        bmk_url = re.sub(r'v1.1\/', r'', mgmt_url)
 
-        self_link = 'http://' + os.path.join(base_url,
-                                             self.os.config.nova.project_id,
-                                             'servers', server_id)
-        bookmark_link = 'http://' + os.path.join(api_url,
-                                            self.os.config.nova.project_id,
-                                            'servers', server_id)
+        self_link = os.path.join(mgmt_url, 'servers', server_id)
+        bookmark_link = os.path.join(bmk_url, 'servers', server_id)
 
         expected_links = [
             {
