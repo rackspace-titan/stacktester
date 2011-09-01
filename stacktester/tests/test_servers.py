@@ -1,5 +1,6 @@
 
 import base64
+import datetime
 import json
 import os
 import re
@@ -9,6 +10,7 @@ import unittest2 as unittest
 from stacktester import openstack
 from stacktester import exceptions
 from stacktester.common import ssh
+from stacktester.common import utils
 
 
 class ServersTest(unittest.TestCase):
@@ -228,6 +230,24 @@ class ServersTest(unittest.TestCase):
         self.assertEqual(server['accessIPv4'], '')
         self.assertEqual(server['accessIPv6'], '')
         self.assertEqual(server['metadata'], created_server['metadata'])
+
+        # Parse last-updated time
+        update_time = utils.load_isotime(server['updated'])
+
+        # Ensure server not returned with future changes-since
+        future_time = utils.dump_isotime(update_time + datetime.timedelta(1))
+        params = 'changes-since?%s' % future_time
+        response, body = self.os.nova.request('GET', '/servers?%s' % params)
+        servers = json.loads(body)['servers']
+        self.assertTrue(len(servers) == 0)
+
+        # Ensure server is returned with past changes-since
+        future_time = utils.dump_isotime(update_time - datetime.timedelta(1))
+        params = 'changes-since?%s' % future_time
+        response, body = self.os.nova.request('GET', '/servers?%s' % params)
+        servers = json.loads(body)['servers']
+        server_ids = map(lambda x: x['id'], servers)
+        self.assertTrue(server_id in server_ids)
 
         # Update name
         new_server = {'name': 'stacktester2'}
