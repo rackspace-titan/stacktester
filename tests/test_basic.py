@@ -5,7 +5,7 @@ This file or the directory that it's in should not contain tests which
 test an OpenStack installation.
 """
 
-import unittest
+import unittest2 as unittest
 
 
 class TestTestsRun(unittest.TestCase):
