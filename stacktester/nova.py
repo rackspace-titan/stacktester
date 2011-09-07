@@ -50,9 +50,7 @@ class API(stacktester.common.http.Client):
                                               base_url=self.auth_base_url)
 
         try:
-            mgmt_url = resp['x-server-management-url']
-            mgmt_url = mgmt_url.rstrip('/').rsplit('/', 1)[0]
-            self.management_url = mgmt_url + '/v1.1/' + project_id
+            self.management_url = resp['x-server-management-url']
             self.token = resp['x-auth-token']
             return self.token
         except KeyError:
@@ -86,9 +84,7 @@ class API(stacktester.common.http.Client):
             self.token = auth_data['token']['id']
             svc_name=self.service_name
             mgmt_url = auth_data['serviceCatalog'][svc_name][0]['publicURL']
-            mgmt_url = mgmt_url.rstrip('/').rsplit('/', 1)[0]
-            #NOTE: project_id == tenant_id in nova
-            self.management_url = mgmt_url + '/v1.1/' + project_id
+            self.management_url = mgmt_url.rstrip('/') + '/' + project_id
             return self.token
         except KeyError:
             print "Failed to authenticate user"
